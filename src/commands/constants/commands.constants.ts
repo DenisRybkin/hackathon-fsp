@@ -1,3 +1,5 @@
 export enum CommandConstants {
-	GetStats = 'get_stats'
+  GetStats = 'get_stats',
+  Init = 'init',
 }
+
