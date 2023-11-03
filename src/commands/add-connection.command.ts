@@ -16,7 +16,6 @@ class AddConnectionCommand extends CommandBase {
     super(bot);
   }
 
-
   private async submit(userId: number, credentials: Partial<ICredentialsDB> & {step?: number}, ctx: ctxType) {
     if(
       !credentials.database 

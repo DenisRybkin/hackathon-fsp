@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id          BigInt       @id @db.BigInt
+  username    String?
+  firstname   String?
+  lastname    String?
+  connections Connection[]
+}
+
+model Connection {
+  id        String  @id @default(uuid())
+  active    Boolean @default(true)
+  port      Int
+  user      String
+  host      String
+  database  String
+  password  String
+  accountId BigInt
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
