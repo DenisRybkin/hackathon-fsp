@@ -1,4 +1,5 @@
 import { UUID, randomUUID } from 'crypto';
+import { Account } from './account.entity';
 
 export class Connection {
   private readonly id: UUID;
@@ -11,7 +12,8 @@ export class Connection {
     private database: string,
     private password: string,
     id?: UUID,
-    active?: boolean
+    active?: boolean,
+    private readonly account?: Account
   ) {
     this.id = id ?? randomUUID();
     this.active = active ?? true;
@@ -37,6 +39,9 @@ export class Connection {
   }
   public get Active(): boolean {
     return this.active;
+  }
+  public get Account(): Account | undefined {
+    return this.account;
   }
 }
 

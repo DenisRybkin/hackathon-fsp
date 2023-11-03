@@ -1,11 +1,11 @@
-import { AccountRepository } from '../domain/account.repository';
+import { IAccountRepository } from '../domain/account.repository';
 import { Account } from '../domain/entities/account.entity';
 import prisma from '../../../libs/prisma';
 import { Connection } from '../domain/entities/connection.entity';
 import { Nullable } from '../../../types/app.types';
-import { UUID, randomUUID } from 'crypto';
+import { UUID } from 'crypto';
 
-export class AccountRepositoryImpl implements AccountRepository {
+export class AccountRepositoryImpl implements IAccountRepository {
   public async findById(id: bigint): Promise<Nullable<Account>> {
     const account = await prisma.account.findUnique({
       where: { id },
