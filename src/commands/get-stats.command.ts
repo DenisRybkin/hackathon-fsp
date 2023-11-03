@@ -5,7 +5,7 @@ import { DbClientService } from '../database/db-client.service'
 import { CommandBase } from './base/command.base'
 import { CommandConstants } from './constants/commands.constants'
 
-type ctxType = NarrowedContext<IBotContext,Update.CallbackQueryUpdate<CallbackQuery> | {
+export type ctxType = NarrowedContext<IBotContext,Update.CallbackQueryUpdate<CallbackQuery> | {
 	message: any;
 	update_id: number;
 }>
