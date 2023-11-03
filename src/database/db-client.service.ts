@@ -29,4 +29,19 @@ export class DbClientService {
         client.release()
         return res;
     }
+
+    public async getStatsActivity() {
+        const res = await this.execute('SELECT * FROM pg_stat_activity;')
+        const transformedRes = res.rows.filter(item => item.datname == 'r-journal1').map(item => ({
+            datid: item.datid,
+			datname: item.datname,
+			pid: item.pid,
+			usename: item.usename,
+			application_name: item.application_name,
+            query_start: item.query_start,
+			state_change: item.state_change,
+			state: item.state
+      }))
+      return transformedRes;
+    }
 }
