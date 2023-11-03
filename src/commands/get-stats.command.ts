@@ -1,8 +1,14 @@
-import { Telegraf } from 'telegraf'
+import { NarrowedContext, Telegraf } from 'telegraf'
+import { CallbackQuery, Update } from 'telegraf/typings/core/types/typegram'
 import { IBotContext } from '../context/context.interface'
 import { DbClientService } from '../database/db-client.service'
 import { CommandBase } from './base/command.base'
 import { CommandConstants } from './constants/commands.constants'
+
+type ctxType = NarrowedContext<IBotContext,Update.CallbackQueryUpdate<CallbackQuery> | {
+	message: any;
+	update_id: number;
+}>
 
 class GetStatsCommand extends CommandBase {
   constructor(
@@ -10,25 +16,30 @@ class GetStatsCommand extends CommandBase {
     private readonly dbClient: DbClientService
   ) {
     super(bot);
+		this.initActions()
   }
+
+	private async sendStatActivity(ctx: ctxType) {
+		const res = await this.dbClient.getStatsActivity();
+      for (let i = 0; i < res.length; i++) {
+				ctx.reply(JSON.stringify(res[i]))
+			}
+	}
+
+	private initHears() {
+		this.bot.hears('Get Stats Activity', this.sendStatActivity.bind(this));
+	}
+	
+	private initActions() {
+    this.bot.action(CommandConstants.GetStats, this.sendStatActivity.bind(this) )
+
+  }
+
   handle() {
     this.bot.command(CommandConstants.GetStats, async ctx => {
-      const res = await this.dbClient.execute('SELECT * FROM pg_stat_activity;')
-      const transformedRes =  res.rows.filter(item => item.datname == 'r-journal1').map(item => ({
-        datid: item.datid,
-				datname: item.datname,
-				pid: item.pid,
-				usename: item.usename,
-				application_name: item.application_name,
-        query_start: item.query_start,
-				state_change: item.state_change,
-				state: item.state
-        //query: item.query
-
-      }))
-      console.log(transformedRes)
-      for (let i = 0; i < transformedRes.length; i++) {
-				ctx.reply(JSON.stringify(transformedRes[i]))
+      const res = await this.dbClient.getStatsActivity();
+      for (let i = 0; i < res.length; i++) {
+				ctx.reply(JSON.stringify(res[i]))
 			}
     })
   }

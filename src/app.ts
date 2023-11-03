@@ -2,6 +2,7 @@ import { Telegraf } from 'telegraf'
 import LocalSession from 'telegraf-session-local'
 import { InitCommandType, initializersCommands } from './commands'
 import { CommandBase } from './commands/base/command.base'
+import { getMainMenu } from './commands/keyboards/mainMenu.keyboard'
 import { IConfigService } from './config/config.interface'
 import { ConfigService } from './config/config.service'
 import { IBotContext } from './context/context.interface'
@@ -29,6 +30,9 @@ export class Bot {
     //await this.databaseService.init();
     for (const command of this.commands) command.handle();
     await this.bot.launch();
+    this.bot.start(ctx => {
+      ctx.reply('Hello!', getMainMenu())
+    })
   }
 }
 
@@ -48,3 +52,4 @@ export const bot = new Bot(
   initializersCommands(client)
 );
 bot.init();
+
