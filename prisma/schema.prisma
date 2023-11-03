@@ -16,7 +16,7 @@ model Account {
 }
 
 model Connection {
-  id        Int     @id @default(autoincrement())
+  id        String  @id @default(uuid())
   port      Int
   user      String
   host      String

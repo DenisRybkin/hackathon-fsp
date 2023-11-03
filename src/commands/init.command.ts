@@ -4,6 +4,7 @@ import { CommandBase } from './base/command.base';
 import { CommandConstants } from './constants/commands.constants';
 import { Account } from '../modules/account/domain/entities/account.entity';
 import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
+import { Connection } from '../modules/account/domain/entities/connection.entity';
 
 const accountRepo = new AccountRepositoryImpl();
 
@@ -26,9 +27,8 @@ class InitCommand extends CommandBase {
         []
       );
 
-      const user = await accountRepo.findById(account.Id);
-
-      if (user) return ctx.reply('User already exist');
+      const alreadyHasAccount = await accountRepo.findById(account.Id);
+      if (alreadyHasAccount) return ctx.reply('Account already exist');
 
       await accountRepo.save(account);
 

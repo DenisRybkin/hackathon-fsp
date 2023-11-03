@@ -5,6 +5,7 @@ import { CommandBase } from './base/command.base';
 import { initGetStatsCommand } from './get-stats.command';
 import { initStartCommand } from './start.command';
 import { initInitCommand } from './init.command';
+import { initAddConnectionCommand } from './add-connection.command';
 
 export type InitCommandType = (bot: Telegraf<IBotContext>) => CommandBase;
 
@@ -13,6 +14,7 @@ export const initializersCommands: (
 ) => Array<InitCommandType> = (dbClient: DbClientService) => [
   initStartCommand(dbClient),
   initGetStatsCommand(dbClient),
+  initAddConnectionCommand(dbClient),
   initInitCommand(),
 ];
 

@@ -3,6 +3,7 @@ import { Account } from '../domain/entities/account.entity';
 import prisma from '../../../libs/prisma';
 import { Connection } from '../domain/entities/connection.entity';
 import { Nullable } from '../../../types/app.types';
+import { UUID, randomUUID } from 'crypto';
 
 export class AccountRepositoryImpl implements AccountRepository {
   public async findById(id: bigint): Promise<Nullable<Account>> {
@@ -26,10 +27,11 @@ export class AccountRepositoryImpl implements AccountRepository {
       username ?? null,
       firstname ?? null,
       lastname ?? null,
-      connections.map(
-        ({ id, port, user, host, database, password }) =>
-          new Connection(id, port, user, host, database, password) ?? []
-      )
+      []
+      // connections.map(
+      //   ({ id, port, user, host, database, password }) =>
+      //     new Connection(port, user, host, database, password, id as UUID)
+      // ) ?? []
     );
   }
   public async save(account: Account): Promise<void> {

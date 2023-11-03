@@ -1,13 +1,13 @@
-import { Telegraf } from 'telegraf'
-import LocalSession from 'telegraf-session-local'
-import { InitCommandType, initializersCommands } from './commands'
-import { CommandBase } from './commands/base/command.base'
-import { getMainMenu } from './commands/keyboards/mainMenu.keyboard'
-import { IConfigService } from './config/config.interface'
-import { ConfigService } from './config/config.service'
-import { IBotContext } from './context/context.interface'
-import { CronService } from './cron/cron.service'
-import { DbClientService, ICredentialsDB } from "./database/db-client.service"
+import { Telegraf } from 'telegraf';
+import LocalSession from 'telegraf-session-local';
+import { InitCommandType, initializersCommands } from './commands';
+import { CommandBase } from './commands/base/command.base';
+import { getMainMenu } from './commands/keyboards/mainMenu.keyboard';
+import { IConfigService } from './config/config.interface';
+import { ConfigService } from './config/config.service';
+import { IBotContext } from './context/context.interface';
+import { CronService } from './cron/cron.service';
+import { DbClientService, ICredentialsDB } from './database/db-client.service';
 
 export class Bot {
   bot: Telegraf<IBotContext>;
@@ -31,8 +31,8 @@ export class Bot {
     for (const command of this.commands) command.handle();
     await this.bot.launch();
     this.bot.start(ctx => {
-      ctx.reply('Hello!', getMainMenu())
-    })
+      ctx.reply('Hello!', getMainMenu());
+    });
   }
 }
 
@@ -43,13 +43,11 @@ const mockCredentialsDB: ICredentialsDB = {
   user: 'postgres',
   password: 'deniskaSUPER12345',
   database: 'r-journal1',
-  host: 'localhost'
-}
+  host: 'localhost',
+};
 
-const client = new DbClientService(mockCredentialsDB)
-export const bot = new Bot(
-  configService,
-  initializersCommands(client)
-);
+const client = new DbClientService(mockCredentialsDB);
+export const bot = new Bot(configService, initializersCommands(client));
+
 bot.init();
 

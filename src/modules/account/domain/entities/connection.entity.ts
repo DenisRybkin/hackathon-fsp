@@ -1,14 +1,20 @@
+import { UUID, randomUUID } from 'crypto';
+
 export class Connection {
+  private readonly id: UUID;
+
   constructor(
-    private readonly id: number,
     private port: number,
     private user: string,
     private host: string,
     private database: string,
-    private password: string
-  ) {}
+    private password: string,
+    id?: UUID
+  ) {
+    this.id = id ?? randomUUID();
+  }
 
-  public get Id(): number {
+  public get Id(): UUID {
     return this.id;
   }
   public get Port(): number {
