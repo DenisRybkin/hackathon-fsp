@@ -27,11 +27,18 @@ export class AccountRepositoryImpl implements AccountRepository {
       username ?? null,
       firstname ?? null,
       lastname ?? null,
-      []
-      // connections.map(
-      //   ({ id, port, user, host, database, password }) =>
-      //     new Connection(port, user, host, database, password, id as UUID)
-      // ) ?? []
+      connections.map(
+        ({ id, port, user, host, database, password, active }) =>
+          new Connection(
+            port,
+            user,
+            host,
+            database,
+            password,
+            id as UUID,
+            active
+          )
+      ) ?? []
     );
   }
   public async save(account: Account): Promise<void> {
@@ -45,7 +52,7 @@ export class AccountRepositoryImpl implements AccountRepository {
         connections: {
           deleteMany: {},
           connectOrCreate: account.Connections.map(
-            ({ Id, Port, User, Host, Database, Password }) => ({
+            ({ Id, Port, User, Host, Database, Password, Active }) => ({
               where: { id: Id },
               create: {
                 id: Id,
@@ -54,6 +61,7 @@ export class AccountRepositoryImpl implements AccountRepository {
                 host: Host,
                 database: Database,
                 password: Password,
+                active: Active,
               },
             })
           ),
@@ -66,7 +74,7 @@ export class AccountRepositoryImpl implements AccountRepository {
         lastname: account.Lastname,
         connections: {
           connectOrCreate: account.Connections.map(
-            ({ Id, Port, User, Host, Database, Password }) => ({
+            ({ Id, Port, User, Host, Database, Password, Active }) => ({
               where: { id: Id },
               create: {
                 id: Id,
@@ -75,6 +83,7 @@ export class AccountRepositoryImpl implements AccountRepository {
                 host: Host,
                 database: Database,
                 password: Password,
+                active: Active,
               },
             })
           ),

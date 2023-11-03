@@ -17,6 +17,7 @@ model Account {
 
 model Connection {
   id        String  @id @default(uuid())
+  active    Boolean @default(true)
   port      Int
   user      String
   host      String

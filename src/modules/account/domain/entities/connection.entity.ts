@@ -2,6 +2,7 @@ import { UUID, randomUUID } from 'crypto';
 
 export class Connection {
   private readonly id: UUID;
+  private readonly active: boolean;
 
   constructor(
     private port: number,
@@ -9,9 +10,11 @@ export class Connection {
     private host: string,
     private database: string,
     private password: string,
-    id?: UUID
+    id?: UUID,
+    active?: boolean
   ) {
     this.id = id ?? randomUUID();
+    this.active = active ?? true;
   }
 
   public get Id(): UUID {
@@ -31,6 +34,9 @@ export class Connection {
   }
   public get Password(): string {
     return this.password;
+  }
+  public get Active(): boolean {
+    return this.active;
   }
 }
 
