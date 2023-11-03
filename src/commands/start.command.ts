@@ -1,22 +1,37 @@
-import { CommandBase } from './base/command.base';
-import { Telegraf } from 'telegraf';
-import { IBotContext } from '../context/context.interface';
+import { Telegraf } from 'telegraf'
+import { IBotContext } from '../context/context.interface'
+import { DbClientService } from '../database/db-client.service'
+import { CommandBase } from './base/command.base'
+import { CommandConstants } from './constants/commands.constants'
 
 class StartCommand extends CommandBase {
+
+  
+
   constructor(
     bot: Telegraf<IBotContext>,
-    /* TODO: mb add prisma client for store credentials of db instances*/
+    private readonly dbClient: DbClientService
   ) {
     super(bot);
   }
+
+ 
+
   handle() {
-    this.bot.start(async ctx => {
-      ctx.reply('Salam!');
-    });
+    this.bot.start(async ctx => 
+      ctx.reply('Салам алейкум! Что хочешь от меня?', {reply_markup: {
+        inline_keyboard: [
+            [
+                { text: "But1", callback_data: CommandConstants.GetStats},
+                { text: "but2", callback_data: '/start'}
+            ]
+        ]
+      }
+    }));
   }
 }
 
 export const initStartCommand =
-  (/* TODO: mb add prisma client for store credentials of db instances*/) =>
+  (dbClient: DbClientService) =>
   (bot: Telegraf<IBotContext>) =>
-    new StartCommand(bot);
+    new StartCommand(bot,dbClient);

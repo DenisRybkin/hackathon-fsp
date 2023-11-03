@@ -1,4 +1,4 @@
-import {Client} from "pg";
+import { Pool } from "pg"
 
 export interface ICredentialsDB {
     readonly user: string;
@@ -9,12 +9,12 @@ export interface ICredentialsDB {
 }
 
 export class DbClientService {
-    private client: Client
+    private pool: Pool
     public name: string
 
     constructor(credentials: ICredentialsDB) {
         this.name = credentials.database;
-        this.client = new Client({
+        this.pool = new Pool({
             user: credentials.user,
             host: credentials.host,
             database: credentials.database,
@@ -23,7 +23,10 @@ export class DbClientService {
         });
     }
 
-    public execute(command: string): Promise<any> {
-        return this.client.query(command)
+    public async execute(command: string): Promise<any> {
+        const client = await this.pool.connect()
+        const res =  await client.query(command)
+        client.release()
+        return res;
     }
 }
