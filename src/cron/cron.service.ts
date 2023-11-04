@@ -34,8 +34,15 @@ const check = async (bot: Telegraf<IBotContext>, connection: Connection) => {
           }\n${Object.entries(row.duration).reduce(
             (acc, [key, value]) => `${acc}\n${value} ${key}`,
             'Execution time:'
-          )}`
+          )}`,
+          {
+            reply_markup: {
+              inline_keyboard: [[{ text: 'Undo', callback_data: 'undo' }]],
+            },
+          }
         );
+
+        bot.action('undo', ctx => console.log(ctx));
 
         client.release();
       } catch (e) {
