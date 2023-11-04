@@ -85,6 +85,11 @@ export class DbClientService {
     return res;
   }
 
+  public async getCachingNormal() {
+    const res = await this.execute('select sum(blks_hit)*100/sum(blks_hit+blks_read) as hit_ratio from pg_stat_database;');
+    return res.rows[0].hit_ratio;
+  }
+
   public async getBuffersBackendFsync() {
     const res = await this.execute('SELECT buffers_backend_fsync FROM pg_stat_bgwriter;');
     return res.rows[0].buffers_backend_fsync;

@@ -4,6 +4,7 @@ export enum CommandConstants {
   GetDashboard = 'get_dashboard',
   BuffersStats = 'buffers_stats',
   GetMaxConnections = 'get_max_connections',
+  Metrics = 'metrics',
   SetMaxBuffers = 'set_max_buffers',
   SetMaxConnections = 'set_max_connections',
   CheckDeadLocks = 'check_deadlocks'

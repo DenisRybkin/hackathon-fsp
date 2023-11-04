@@ -51,6 +51,21 @@ export class DashboardCommand extends CommandBase {
     );
   }
 
+  private async getMetrics() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+
+    // const res = await client.getConnections();
+    this.getCachingNormalStatus();
+    this.getBuffersBackendStatus();
+    this.getUnusedIndexesStatus();
+  }
+
   private async getConnections() {
     const client = new DbClientService({
       database: this.connection.Database,
@@ -109,6 +124,19 @@ export class DashboardCommand extends CommandBase {
     }
   }
 
+  private async getCachingNormalStatus() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+
+    const param = await client.getCachingNormal();
+    this.ctx.reply(ValidatorService.cachingNormalValidator(param));
+  }
+
   private async getBuffersBackendStatus() {
     const client = new DbClientService({
       database: this.connection.Database,
@@ -153,6 +181,10 @@ export class DashboardCommand extends CommandBase {
       CommandConstants.BuffersStats,
       this.getBuffersStats.bind(this)
     );
+    this.bot.action(
+        CommandConstants.Metrics,
+        this.getMetrics.bind(this)
+    );
 
     const keyboard: InlineKeyboardButton[][] = [
       [
@@ -177,7 +209,8 @@ export class DashboardCommand extends CommandBase {
           callback_data: CommandConstants.GetMaxConnections,
         },
         { text: 'Buffers stats', callback_data: CommandConstants.BuffersStats },
-      ],
+        { text: 'Metrics', callback_data: CommandConstants.Metrics },
+      ]
     ];
 
     this.ctx.reply(
