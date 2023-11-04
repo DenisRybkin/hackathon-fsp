@@ -18,9 +18,9 @@ const checkLongTransaction = async (
   const transactions = await GetTransactions(connection);
 
   console.log('transactions:', transactions);
-
-  for await (const transaction of transactions) {
-    SendLongTransactionMessage(bot, connection, transaction);
+  if(!transactions) return null;
+  for (const transaction of transactions) {
+    await SendLongTransactionMessage(bot, connection, transaction);
   }
 
   TerminateHandler(bot, connection);
@@ -33,9 +33,9 @@ const checkDeadlocks = async (
   const deadlocks = await GetDeadlocks(connection);
 
   console.log('deadlocks:', deadlocks);
-
-  for await (const deadlock of deadlocks) {
-    SendDeadlockMessage(bot, connection, deadlock)
+  
+  for (const deadlock of deadlocks) {
+    await SendDeadlockMessage(bot, connection, deadlock)
   }
 }
 
@@ -53,8 +53,10 @@ export class CronService implements ICronService {
       const connectionRepo = new ConnectionRepositoryImpl();
       const connections = await connectionRepo.find(true);
 
+      if(!connections) return null;
+
       try {
-        for await (const connection of connections) {
+        for (const connection of connections) {
           checkLongTransaction(this.bot, connection)
         }
       } catch (e) {
@@ -67,10 +69,12 @@ export class CronService implements ICronService {
     cron.schedule('*/20 * * * * *', async () => {
       const connectionRepo = new ConnectionRepositoryImpl();
       const connections = await connectionRepo.find(true);
+      
+      if(!connections) return null;
 
       try {
-        for await (const connection of connections) {
-          checkDeadlocks(this.bot, connection)
+        for (const connection of connections) {
+          await checkDeadlocks(this.bot, connection)
         }
       } catch (e) {
         console.log('error:', e);

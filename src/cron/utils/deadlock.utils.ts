@@ -25,20 +25,36 @@ type DeadlockType = {
 		seconds: number
 	},
 	blocked_pid: number,
+	blocking_pid: number,
 	blocked_query: string,
+	blocking_query: string,
 
 }
 
 export const SendDeadlockMessage = async (
 	bot: Telegraf<IBotContext>,
 	connection: Connection,
-	deadlock: DeadlockType
+	deadlock: DeadlockType,
 ) => {
+
+	const keyboard = [
+		[
+      {
+        text: 'Kill blocking transaction',
+        callback_data: `kill-transaction-${deadlock.blocking_pid}`,
+      },
+    ],
+  ];
+
 	await bot.telegram.sendMessage(
 		Number(connection.Account?.Id),
+		'A deadlock has occurred' + '\n\n' +
 		'locked item: ' + deadlock.locked_item + '\n' +
 		`waiting: ${deadlock.waiting_duration.hours} hours ${deadlock.waiting_duration.minutes} minutes ${deadlock.waiting_duration.seconds} seconds` + '\n' +
 		'blocked pid: ' + deadlock.blocked_pid + '\n' +
-		'blocked_query: ' + deadlock.blocked_query + '\n'
+		'blocking pid: ' + deadlock.blocking_pid + '\n' +
+		'blocked_query: ' + deadlock.blocked_query + '\n' +
+		'blocking_query: ' + deadlock.blocking_query + '\n'
+		, {reply_markup: {inline_keyboard: keyboard}}
 	);
 }

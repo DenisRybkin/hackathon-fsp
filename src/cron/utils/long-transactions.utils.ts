@@ -31,7 +31,7 @@ export const SendLongTransactionMessage = (
   const keyboard = [
     [
       {
-        text: 'Undo',
+        text: 'Kill transaction',
         callback_data: `kill-transaction-${transaction.pid}`,
       },
     ],
@@ -52,7 +52,7 @@ export const TerminateHandler = (
       host: connection.Host,
       database: connection.Database,
       password: connection.Password,
-      port: connection.Port,
+      port: connection.Port,  
     }).execute('select pg_terminate_backend($1)', [Number(ctx.match[1])]);
   });
 };
