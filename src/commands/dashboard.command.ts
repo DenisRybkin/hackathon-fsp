@@ -7,23 +7,7 @@ import { screenshoter } from '../services/screenshot.service'
 import { CommandBase } from './base/command.base'
 import { CommandConstants } from './constants/commands.constants'
 import { ctxType } from './index'
-
-const transformStats = (res: any) => {
-  const transformedRes = res.map(item => ({
-    datid: 'db id: ' + item.datid,
-    datname: 'username db name: ' + item.datname,
-    pid: 'process id:' + item.pid,
-    usename: 'username: ' + item.usename,
-    application_name: 'app name: ' + item.application_name,
-    query_start: 'start request date: ' + new Date(item.query_start)?.toLocaleString('en'),
-    state_change: 'date last change: ' + new Date(item.state_change).toLocaleString('en'),
-    state: 'process state: ' + item.state,
-  }));
-
-  return transformedRes.map(item =>
-    Object.values(item).reduce((acc, cur) => `${acc}\n${cur}`, '')
-  );
-};
+import {ValidatorService} from "../services/validator.service";
 
 export class DashboardCommand extends CommandBase {
   constructor(
@@ -120,9 +104,35 @@ export class DashboardCommand extends CommandBase {
       AND query NOT LIKE '%FROM pg_stat_activity%'`,
       [this.connection.Database]
     );
-    for (const item of transformStats(res.rows)) {
+    for (const item of ValidatorService.transformStats(res.rows)) {
       this.ctx.reply(item);
     }
+  }
+
+  private async getBuffersBackendStatus() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+
+    const param = await client.getBuffersBackendFsync();
+    this.ctx.reply(ValidatorService.buffersBackendValidator(param));
+  }
+
+  private async getUnusedIndexesStatus() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+
+    const rows = await client.getUnusedIndexes();
+    this.ctx.reply(ValidatorService.unusedIndexesValidator(rows));
   }
 
 

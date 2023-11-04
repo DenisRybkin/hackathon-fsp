@@ -85,6 +85,16 @@ export class DbClientService {
     return res;
   }
 
+  public async getBuffersBackendFsync() {
+    const res = await this.execute('SELECT buffers_backend_fsync FROM pg_stat_bgwriter;');
+    return res.rows[0].buffers_backend_fsync;
+  }
+
+  public async getUnusedIndexes() {
+    const res = await this.execute('SELECT * FROM pg_stat_all_indexes WHERE idx_scan = 0;');
+    return res.rows;
+  }
+
 
 
 
