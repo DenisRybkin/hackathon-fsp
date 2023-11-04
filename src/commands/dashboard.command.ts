@@ -90,6 +90,32 @@ export class DashboardCommand extends CommandBase {
     this.ctx.reply("Max connections: " + JSON.stringify(res))
   }
 
+  private async setSharedBuffers() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+
+    const res = await client.getMaxBuffers();
+    this.ctx.reply("Max shared buffers: " + JSON.stringify(res))
+  }
+
+  private async setMaxConnections() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+     
+    const res = await client.getMaxConnections();
+    this.ctx.reply("Max connections: " + JSON.stringify(res))
+  }
+
   private async getStats() {
     const client = new DbClientService({
       database: this.connection.Database,
