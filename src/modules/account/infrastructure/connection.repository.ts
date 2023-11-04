@@ -5,9 +5,12 @@ import { Connection } from '../domain/entities/connection.entity';
 import { Account } from '../domain/entities/account.entity';
 
 export class ConnectionRepositoryImpl implements IConnectionRepository {
-  public async find(): Promise<Connection[]> {
+  public async find(onlyActive: boolean = true): Promise<Connection[]> {
     return prisma.connection
-      .findMany({ include: { account: true } })
+      .findMany({
+        ...(onlyActive && { where: { active: true } }),
+        include: { account: true },
+      })
       .then(connections =>
         connections.map(
           ({
