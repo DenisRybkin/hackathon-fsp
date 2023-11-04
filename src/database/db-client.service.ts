@@ -128,5 +128,9 @@ export class DbClientService {
     AND query NOT LIKE '%FROM pg_stat_activity%'`
     ).then(res => res.rows);
   }
+  public async getMemory(database: string) {
+    return this.execute(
+      `select pg_database_size($1);`, [database]).then(res => res.rows)
+  }
 }
 
