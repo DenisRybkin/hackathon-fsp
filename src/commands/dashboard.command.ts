@@ -1,15 +1,20 @@
-import { Telegraf } from 'telegraf'
-import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram'
+import { NarrowedContext, Telegraf } from 'telegraf'
+import { CallbackQuery, InlineKeyboardButton, Update } from 'telegraf/typings/core/types/typegram'
 import { IBotContext } from '../context/context.interface'
 import { DbClientService } from '../database/db-client.service'
 import { Connection } from '../modules/account/domain/entities/connection.entity'
-import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository'
 import { screenshoter } from '../services/screenshot.service'
 import { CommandBase } from './base/command.base'
 import { CommandConstants } from './constants/commands.constants'
-import { ctxType } from './get-stats.command'
 
-const accountRepo = new AccountRepositoryImpl();
+export type ctxType = NarrowedContext<
+  IBotContext,
+  | Update.CallbackQueryUpdate<CallbackQuery>
+  | {
+      message: any;
+      update_id: number;
+    }
+>;
 
 const transformStats = (res: any) => {
   const transformedRes = res.map(item => ({

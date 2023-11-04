@@ -1,15 +1,14 @@
-import { Telegraf } from 'telegraf';
-import LocalSession from 'telegraf-session-local';
-import { BotCommand } from 'telegraf/typings/core/types/typegram';
-import { InitCommandType, initializersCommands } from './commands';
-import { CommandBase } from './commands/base/command.base';
-import { CommandConstants } from './commands/constants/commands.constants';
-import { getMainMenu } from './commands/keyboards/mainMenu.keyboard';
-import { IConfigService } from './config/config.interface';
-import { ConfigService } from './config/config.service';
-import { IBotContext } from './context/context.interface';
-import { CronService } from './cron/cron.service';
-import { DbClientService, ICredentialsDB } from './database/db-client.service';
+import { Telegraf } from 'telegraf'
+import LocalSession from 'telegraf-session-local'
+import { BotCommand } from 'telegraf/typings/core/types/typegram'
+import { InitCommandType, initializersCommands } from './commands'
+import { CommandBase } from './commands/base/command.base'
+import { CommandConstants } from './commands/constants/commands.constants'
+import { getMainMenu } from './commands/keyboards/mainMenu.keyboard'
+import { IConfigService } from './config/config.interface'
+import { ConfigService } from './config/config.service'
+import { IBotContext } from './context/context.interface'
+import { CronService } from './cron/cron.service'
 
 const hintCommands: BotCommand[] = [
   {
@@ -52,16 +51,7 @@ export class Bot {
 
 const configService = new ConfigService();
 
-const mockCredentialsDB: ICredentialsDB = {
-  port: 5432,
-  user: 'postgres',
-  password: 'deniskaSUPER12345',
-  database: 'r-journal1',
-  host: 'localhost',
-};
-
-const client = new DbClientService(mockCredentialsDB);
-export const bot = new Bot(configService, initializersCommands(client));
+export const bot = new Bot(configService, initializersCommands());
 
 bot.init();
 
