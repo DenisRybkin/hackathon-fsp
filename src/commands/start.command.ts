@@ -1,15 +1,14 @@
-import { Telegraf } from 'telegraf';
+import { Telegraf } from 'telegraf'
 
-import { IBotContext } from '../context/context.interface';
-import { DbClientService } from '../database/db-client.service';
-import { CommandBase } from './base/command.base';
-import { CommandConstants } from './constants/commands.constants';
-import { Account } from '../modules/account/domain/entities/account.entity';
-import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
-import { ConnectionRepositoryImpl } from '../modules/account/infrastructure/connection.repository';
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram'
+import { IBotContext } from '../context/context.interface'
+import { DbClientService } from '../database/db-client.service'
+import { Account } from '../modules/account/domain/entities/account.entity'
+import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository'
+import { CommandBase } from './base/command.base'
+import { CommandConstants } from './constants/commands.constants'
 
 const accountRepo = new AccountRepositoryImpl();
-const connectionRepo = new ConnectionRepositoryImpl();
 
 class StartCommand extends CommandBase {
   constructor(
@@ -33,22 +32,24 @@ class StartCommand extends CommandBase {
         []
       );
 
-      const a = await connectionRepo.find();
-      console.log(a);
-
       const isAlreadyHasAccount = await accountRepo.findById(account.Id);
       if (!isAlreadyHasAccount) await accountRepo.save(account);
 
+      const inlineKeyboard: InlineKeyboardButton[][] = []
+      if(isAlreadyHasAccount) {
+        inlineKeyboard.push([{
+          text: 'Stats activity',
+          callback_data: CommandConstants.GetStats,
+        }])
+        inlineKeyboard.push([{
+          text: 'Dashboard',
+          callback_data: CommandConstants.GetDashboard,
+        }])
+      }
+
       ctx.reply('How can I help?', {
         reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: 'Stats activity',
-                callback_data: CommandConstants.GetStats,
-              },
-            ],
-          ],
+          inline_keyboard: inlineKeyboard,
         },
       });
     });

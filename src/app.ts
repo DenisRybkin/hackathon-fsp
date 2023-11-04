@@ -23,6 +23,10 @@ const hintCommands: BotCommand[] = [
   {
     command: '/' + CommandConstants.GetStats,
     description: 'Getting Start'
+  },
+  {
+    command: '/' + CommandConstants.GetDashboard,
+    description: 'Get dashboard'
   }
 ] 
 
