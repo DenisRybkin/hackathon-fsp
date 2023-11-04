@@ -61,7 +61,7 @@ export class DashboardCommand extends CommandBase {
       [this.connection.Database]
     );
 
-    this.ctx.reply(JSON.stringify(res.rows?.[0]));
+    this.ctx.reply("Size is: " + res.rows?.[0].pg_size_pretty);
   }
 
   private async getStats() {
