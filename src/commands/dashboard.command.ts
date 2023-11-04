@@ -1,29 +1,29 @@
-import { Telegraf } from 'telegraf';
-import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
-import { IBotContext } from '../context/context.interface';
-import { DbClientService } from '../database/db-client.service';
-import { Connection } from '../modules/account/domain/entities/connection.entity';
-import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
-import { screenshoter } from '../services/screenshot.service';
-import { CommandBase } from './base/command.base';
-import { CommandConstants } from './constants/commands.constants';
-import { ctxType } from './get-stats.command';
+import { Telegraf } from 'telegraf'
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram'
+import { IBotContext } from '../context/context.interface'
+import { DbClientService } from '../database/db-client.service'
+import { Connection } from '../modules/account/domain/entities/connection.entity'
+import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository'
+import { screenshoter } from '../services/screenshot.service'
+import { CommandBase } from './base/command.base'
+import { CommandConstants } from './constants/commands.constants'
+import { ctxType } from './get-stats.command'
 
 const accountRepo = new AccountRepositoryImpl();
 
 const transformStats = (res: any) => {
-  const transformedRes = res.rows.map(item => ({
-    datid: item.datid,
-    datname: item.datname,
-    pid: item.pid,
-    usename: item.usename,
-    application_name: item.application_name,
-    query_start: item.query_start,
-    state_change: item.state_change,
-    state: item.state,
+  const transformedRes = res.map(item => ({
+    datid: "db id: " + item.datid,
+    datname: "username db name: " + item.datname,
+    pid: "process id:" +item.pid,
+    usename: "username: " + item.usename,
+    application_name: "app name: " + item.application_name,
+    query_start: "start request date: " + item.query_start,
+    state_change: "date last change: " + item.state_change,
+    state: "process state: " + item.state,
   }));
 
-  return transformedRes;
+  return transformedRes.map(item => Object.values(item).map(item => item + '\n'));
 };
 
 export class DashboardCommand extends CommandBase {
@@ -75,7 +75,8 @@ export class DashboardCommand extends CommandBase {
     const res = await client.execute(
       `SELECT * FROM pg_stat_activity where datname='${this.connection.Database}'`
     );
-    this.ctx.reply(JSON.stringify(transformStats(res)));
+    console.log(transformStats(res.rows)[0],22222, typeof transformStats(res.rows))
+    this.ctx.replyWithHTML((transformStats(res.rows).join('-----\n')));
   }
 
   handle(): void {
