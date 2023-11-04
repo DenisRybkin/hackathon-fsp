@@ -1,4 +1,4 @@
-import { Pool } from 'pg'
+import { Pool } from 'pg';
 
 export interface ICredentialsDB {
   readonly user: string;
@@ -40,17 +40,16 @@ export class DbClientService {
 
   public async getStatsActivity() {
     const res = await this.execute('SELECT * FROM pg_stat_activity;');
-    const transformedRes = res.rows
-      .map(item => ({
-        datid: item.datid,
-        datname: item.datname,
-        pid: item.pid,
-        usename: item.usename,
-        application_name: item.application_name,
-        query_start: item.query_start,
-        state_change: item.state_change,
-        state: item.state,
-      }));
+    const transformedRes = res.rows.map(item => ({
+      datid: item.datid,
+      datname: item.datname,
+      pid: item.pid,
+      usename: item.usename,
+      application_name: item.application_name,
+      query_start: item.query_start,
+      state_change: item.state_change,
+      state: item.state,
+    }));
     return transformedRes;
   }
 
@@ -59,24 +58,27 @@ export class DbClientService {
   }
 
   public async getMaxBuffers() {
-    const res = await this.execute('SHOW shared_buffers;')
+    const res = await this.execute('SHOW shared_buffers;');
     return res.rows[0].shared_buffers;
   }
 
   public async getMaxConnections() {
-    const res = await this.execute('SHOW max_connections;')
-    console.log(res);
+    const res = await this.execute('SHOW max_connections;');
     return res.rows[0].max_connections;
   }
 
   public async setMaxConnections(value: number) {
-    const res = await this.execute('ALTER SYSTEM SET max_connections = $1', [value])
-    return res
+    const res = await this.execute('ALTER SYSTEM SET max_connections = $1', [
+      value,
+    ]);
+    return res;
   }
 
   public async setMaxBuffers(value: number) {
-    const res = await this.execute('ALTER SYSTEM SET shared_buffers = $1', [value])
-    return res
+    const res = await this.execute('ALTER SYSTEM SET shared_buffers = $1', [
+      value,
+    ]);
+    return res;
   }
 }
 

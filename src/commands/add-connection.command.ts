@@ -4,7 +4,7 @@ import { IBotContext } from '../context/context.interface';
 import { DbClientService, ICredentialsDB } from '../database/db-client.service';
 import { CommandBase } from './base/command.base';
 import { CommandConstants } from './constants/commands.constants';
-import { ctxType } from './get-stats.command';
+import { ctxType } from './index';
 import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
 import { Account } from '../modules/account/domain/entities/account.entity';
 import { Connection } from '../modules/account/domain/entities/connection.entity';
