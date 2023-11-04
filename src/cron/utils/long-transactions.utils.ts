@@ -1,7 +1,7 @@
-import { Telegraf } from 'telegraf';
-import { DbClientService } from '../../database/db-client.service';
-import { Connection } from '../../modules/account/domain/entities/connection.entity';
-import { IBotContext } from '../../context/context.interface';
+import { Telegraf } from 'telegraf'
+import { IBotContext } from '../../context/context.interface'
+import { DbClientService } from '../../database/db-client.service'
+import { Connection } from '../../modules/account/domain/entities/connection.entity'
 
 export const GetTransactions = async (connection: Connection) => {
   const cl = new DbClientService({
@@ -16,7 +16,7 @@ export const GetTransactions = async (connection: Connection) => {
   return transactions;
 };
 
-export const SendMessage = (
+export const SendLongTransactionMessage = (
   bot: Telegraf<IBotContext>,
   connection: Connection,
   transaction: { query: string; pid: number; duration: { [key: string]: any } }
@@ -42,7 +42,7 @@ export const SendMessage = (
   });
 };
 
-export const TerminateHanlder = (
+export const TerminateHandler = (
   bot: Telegraf<IBotContext>,
   connection: Connection
 ) => {
