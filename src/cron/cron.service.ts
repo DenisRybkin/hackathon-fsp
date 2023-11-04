@@ -5,8 +5,10 @@ import { IBotContext } from '../context/context.interface';
 import { ConnectionRepositoryImpl } from '../modules/account/infrastructure/connection.repository';
 import { ICronService } from './cron.interface';
 import { Connection } from '../modules/account/domain/entities/connection.entity';
+import { Memory } from '../modules/account/domain/entities/memory.entity';
 
-const check = async (bot: Telegraf<IBotContext>, connection: Connection) => {
+
+const getClient = async (connection: Connection) => {
   const pool = new Pool({
     user: connection.User,
     host: connection.Host,
@@ -15,7 +17,11 @@ const check = async (bot: Telegraf<IBotContext>, connection: Connection) => {
     port: connection.Port,
   });
 
-  const client = await pool.connect();
+  return await pool.connect();
+}
+
+const checkLongTransaction = async (bot: Telegraf<IBotContext>, connection: Connection) => {
+  const client = await getClient(connection)
   const res =
     await client.query(`SELECT pid, now() - pg_stat_activity.query_start AS duration, query, query_id state FROM pg_stat_activity 
     WHERE query_start IS NOT NULL
@@ -44,7 +50,40 @@ const check = async (bot: Telegraf<IBotContext>, connection: Connection) => {
       }
     }
   }
+  client.release();
 };
+
+const checkUseMemory = async (bot: Telegraf<IBotContext>, connection: Connection, connectionRepo: ConnectionRepositoryImpl) => {
+  const pool = new Pool({
+    user: connection.User,
+    host: connection.Host,
+    database: connection.Database,
+    password: connection.Password,
+    port: connection.Port,
+  });
+
+  const client = await pool.connect();
+  const res = await client.query(`select pg_database_size('${connection.Database}');`)
+  const currentLastStateMemory = connection?.Memories?.[(connection.Memories?.length ?? 0) - 1 ]
+  console.log(`OldMembers:::::____:::::${connection?.Memories}`)
+  console.log(`currentLastStateMemory - ${currentLastStateMemory} : ${res.rows[0].pg_database_size} - res.rows[0].pg_database_size`);
+
+  if (!currentLastStateMemory) {
+    connection.addMemory(new Memory(res.rows[0].pg_database_size))
+  } else if (currentLastStateMemory && currentLastStateMemory !== res.rows[0].pg_database_size) {
+    connection.addMemory(new Memory(res.rows[0].pg_database_size))
+  } 
+  try{
+    await connectionRepo.save(connection)
+  } catch (e) {
+    console.log(e)
+  }
+
+  //connection.addMemory(new Memory(res.rows[0].pg_database_size))
+  console.log("pg_database_size:::::", res.rows[0].pg_database_size)
+  console.log("Model::::::::", connection.Memories)
+  client.release();
+}
 
 export class CronService implements ICronService {
   constructor(
@@ -53,18 +92,45 @@ export class CronService implements ICronService {
   ) {}
 
   async init() {
-    cron.schedule('*/10 * * * * *', async () => {
+      await this.asyncanalizeLongTransaction()
+      await this.analizeUseMemory()
+  }
+
+  async asyncanalizeLongTransaction() {
+    cron.schedule('*/13 * * * * *', async () => {
       const connectionRepo = new ConnectionRepositoryImpl();
       const connections = await connectionRepo.find(true);
 
       try {
         for await (let connection of connections) {
-          await check(this.bot, connection);
+          await checkLongTransaction(this.bot, connection);
         }
       } catch (e) {
-        console.log(e);
+         console.log(e);
       }
     });
+  }
+
+  async analizeUseMemory() {
+    cron.schedule('*/7 * * * * *', async () => {
+      console.log("visit to analizeUseMemory")
+      try {
+        const connectionRepo = new ConnectionRepositoryImpl();
+        const connections = await connectionRepo.find(true);
+        try {
+          for await (let connection of connections) {
+            console.log("before checkUseMemory")
+            await checkUseMemory(this.bot, connection, connectionRepo)
+          }
+        } catch (e) {
+          console.log(e)
+        }
+  
+      } catch (e) {
+        console.log(e)
+      }
+      
+    })
   }
 }
 
