@@ -1,10 +1,10 @@
-import { Telegraf } from 'telegraf';
+import { Telegraf } from 'telegraf'
 
-import { IBotContext } from '../context/context.interface';
-import { Account } from '../modules/account/domain/entities/account.entity';
-import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
-import { CommandBase } from './base/command.base';
-import { initDashboardCommand } from './dashboard.command';
+import { IBotContext } from '../context/context.interface'
+import { Account } from '../modules/account/domain/entities/account.entity'
+import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository'
+import { CommandBase } from './base/command.base'
+import { initDashboardCommand } from './dashboard.command'
 
 const accountRepo = new AccountRepositoryImpl();
 
@@ -53,7 +53,7 @@ class StartCommand extends CommandBase {
         },
       });
 
-      for (let connection of isAlreadyHasAccount.Connections) {
+      for (const connection of isAlreadyHasAccount.Connections) {
         this.bot.action(connection.Id, ctx => {
           initDashboardCommand(connection, ctx)(this.bot).handle();
         });
