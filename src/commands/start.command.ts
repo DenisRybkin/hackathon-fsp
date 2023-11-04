@@ -38,12 +38,16 @@ class StartCommand extends CommandBase {
       ctx.reply('Connections', {
         reply_markup: {
           inline_keyboard: [
-            ...isAlreadyHasAccount.Connections.map(({ Id, User, Database }) => [
-              {
-                text: `${User}:${Database}`,
-                callback_data: Id,
-              },
-            ]),
+            ...isAlreadyHasAccount.Connections.map(
+              ({ Id, User, Database, Host, Port, Active }) => [
+                {
+                  text: `${User}:${Database} | ${Host}:${Port} ${
+                    Active ? '| Watched' : ''
+                  }`,
+                  callback_data: Id,
+                },
+              ]
+            ),
           ],
         },
       });
