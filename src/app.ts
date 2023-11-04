@@ -9,7 +9,6 @@ import { IConfigService } from './config/config.interface';
 import { ConfigService } from './config/config.service';
 import { IBotContext } from './context/context.interface';
 import { CronService } from './cron/cron.service';
-import { DbClientService, ICredentialsDB } from './database/db-client.service';
 
 const hintCommands: BotCommand[] = [
   {
@@ -27,7 +26,7 @@ export class Bot {
   commands: CommandBase[];
   constructor(
     private readonly configService: IConfigService,
-    private readonly initializersCommands: Array<InitCommandType>
+    initializersCommands: Array<InitCommandType>
   ) {
     this.bot = new Telegraf<IBotContext>(this.configService.get('TOKEN'));
     this.bot.telegram.setMyCommands(hintCommands);

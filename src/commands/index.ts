@@ -1,6 +1,5 @@
 import { NarrowedContext, Telegraf } from 'telegraf';
 import { IBotContext } from '../context/context.interface';
-import { DbClientService } from '../database/db-client.service';
 import { initAddConnectionCommand } from './add-connection.command';
 import { CommandBase } from './base/command.base';
 import { initStartCommand } from './start.command';
@@ -17,8 +16,7 @@ export type ctxType = NarrowedContext<
     }
 >;
 
-export const initializersCommands: (
-) => Array<InitCommandType> = () => [
+export const initializersCommands: () => Array<InitCommandType> = () => [
   initStartCommand(),
   initAddConnectionCommand(),
 ];

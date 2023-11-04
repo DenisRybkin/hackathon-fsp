@@ -16,6 +16,7 @@ class StartCommand extends CommandBase {
   handle() {
     this.bot.start(async ctx => {
       const { id, username, first_name, last_name, is_bot } = ctx.message.from;
+      console.log(id);
 
       if (is_bot) return ctx.reply('Sorry, we dont work with bots');
 
