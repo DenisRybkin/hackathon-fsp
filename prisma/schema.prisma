@@ -16,8 +16,8 @@ model Account {
 }
 
 model Connection {
-  id           String  @id @default(uuid())
-  active       Boolean @default(true)
+  id           String   @id @default(uuid())
+  active       Boolean  @default(true)
   port         Int
   user         String
   host         String
@@ -25,5 +25,13 @@ model Connection {
   password     String
   dashboardUrl String?
   accountId    BigInt
-  account      Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  memories     Memory[]
+}
+
+model Memory {
+  id           String     @id @default(uuid())
+  usage        String
+  connectionId String
+  connection   Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
 }

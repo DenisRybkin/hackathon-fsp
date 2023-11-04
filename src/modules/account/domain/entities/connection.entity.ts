@@ -1,6 +1,7 @@
 import { UUID, randomUUID } from 'crypto';
 import { Account } from './account.entity';
 import { Nullable } from '../../../../types/app.types';
+import { Memory } from './memory.entity';
 
 export class Connection {
   private readonly id: UUID;
@@ -16,7 +17,8 @@ export class Connection {
     id?: UUID,
     active?: boolean,
     dashboard?: Nullable<string>,
-    private readonly account?: Account
+    private readonly account?: Account,
+    private readonly memories?: Memory[]
   ) {
     this.id = id ?? randomUUID();
     this.active = active ?? true;
@@ -49,6 +51,13 @@ export class Connection {
   }
   public get Account(): Account | undefined {
     return this.account;
+  }
+  public get Memories(): Memory[] | undefined {
+    return this.memories;
+  }
+
+  public addMemory(memory: Memory) {
+    return this.memories?.push(memory);
   }
 }
 
