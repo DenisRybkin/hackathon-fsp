@@ -6,5 +6,7 @@ export enum CommandConstants {
   GetMaxConnections = 'get_max_connections',
   SetMaxBuffers = 'set_max_buffers',
   SetMaxConnections = 'set_max_connections',
+  CheckDeadLocks = 'check_deadlocks',
+  CheckBufferHitRatio = 'check_buffer_hit_ratio'
 }
 
