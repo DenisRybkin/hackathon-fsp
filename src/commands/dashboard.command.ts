@@ -1,13 +1,13 @@
-import { Telegraf } from 'telegraf';
-import { IBotContext } from '../context/context.interface';
-import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
-import { screenshoter } from '../services/screenshot.service';
-import { CommandBase } from './base/command.base';
-import { CommandConstants } from './constants/commands.constants';
-import { ctxType } from './get-stats.command';
-import { Connection } from '../modules/account/domain/entities/connection.entity';
-import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
-import { DbClientService } from '../database/db-client.service';
+import { Telegraf } from 'telegraf'
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram'
+import { IBotContext } from '../context/context.interface'
+import { DbClientService } from '../database/db-client.service'
+import { Connection } from '../modules/account/domain/entities/connection.entity'
+import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository'
+import { screenshoter } from '../services/screenshot.service'
+import { CommandBase } from './base/command.base'
+import { CommandConstants } from './constants/commands.constants'
+import { ctxType } from './get-stats.command'
 
 const accountRepo = new AccountRepositoryImpl();
 
@@ -47,6 +47,18 @@ export class DashboardCommand extends CommandBase {
     );
 
     this.ctx.reply(JSON.stringify(res.rows?.[0]));
+  }
+
+  private async getStats() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+    const res = await client.execute(`SELECT * FROM pg_stat_activity where datname='${this.connection.Database}'`);
+    this.ctx.reply(JSON.stringify(res));
   }
 
   handle(): void {
