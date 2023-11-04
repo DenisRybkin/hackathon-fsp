@@ -27,6 +27,10 @@ const hintCommands: BotCommand[] = [
   {
     command: '/' + CommandConstants.GetDashboard,
     description: 'Get dashboard'
+  },
+  {
+    command: '/' + CommandConstants.CheckSize,
+    description: 'Check size of database'
   }
 ] 
 
