@@ -1,12 +1,12 @@
-import { UUID } from 'crypto';
-import prisma from '../../../libs/prisma';
-import { IConnectionRepository } from '../domain/connection.repository';
-import { Connection } from '../domain/entities/connection.entity';
-import { Account } from '../domain/entities/account.entity';
-import { Memory } from '../domain/entities/memory.entity';
+import { UUID } from 'crypto'
+import prisma from '../../../libs/prisma'
+import { IConnectionRepository } from '../domain/connection.repository'
+import { Account } from '../domain/entities/account.entity'
+import { Connection } from '../domain/entities/connection.entity'
+import { Memory } from '../domain/entities/memory.entity'
 
 export class ConnectionRepositoryImpl implements IConnectionRepository {
-  public async find(onlyActive: boolean = true): Promise<Connection[]> {
+  public async find(onlyActive = true): Promise<Connection[]> {
     return prisma.connection
       .findMany({
         ...(onlyActive && { where: { active: true } }),
