@@ -49,24 +49,7 @@ export class DashboardCommand extends CommandBase {
     }
   }
 
-  private async checkSize() {
-    const clinet = new DbClientService({
-      database: this.connection.Database,
-      host: this.connection.Host,
-      password: this.connection.Password,
-      port: this.connection.Port,
-      user: this.connection.User,
-    });
-
-    const res = await clinet.execute(
-      'SELECT pg_size_pretty(pg_database_size($1))',
-      [this.connection.Database]
-    );
-
-    this.ctx.reply('Size is: ' + res.rows?.[0].pg_size_pretty);
-  }
-
-  private async getSharedBuffers() {
+  private async getBuffersStats() {
     const client = new DbClientService({
       database: this.connection.Database,
       host: this.connection.Host,
@@ -75,8 +58,16 @@ export class DashboardCommand extends CommandBase {
       user: this.connection.User,
     });
 
-    const res = await client.getMaxBuffers();
-    this.ctx.reply('Max shared buffers: ' + JSON.stringify(res));
+    const maxsize = await client.getMaxBuffers();
+
+    const size = await client.execute(
+      'SELECT pg_size_pretty(pg_database_size($1))',
+      [this.connection.Database]
+    );
+
+    this.ctx.reply(
+      `Used disk size is: ${size.rows?.[0].pg_size_pretty} / ${maxsize}`
+    );
   }
 
   private async getMaxConnections() {
@@ -113,8 +104,6 @@ export class DashboardCommand extends CommandBase {
       CommandConstants.GetDashboard,
       this.sendDashboard.bind(this)
     );
-
-    this.bot.action(CommandConstants.CheckSize, this.checkSize.bind(this));
     this.bot.action(
       CommandConstants.GetStatsIndividual,
       this.getStats.bind(this)
@@ -124,13 +113,12 @@ export class DashboardCommand extends CommandBase {
       this.getMaxConnections.bind(this)
     );
     this.bot.action(
-      CommandConstants.GetMaxBuffers,
-      this.getSharedBuffers.bind(this)
+      CommandConstants.BuffersStats,
+      this.getBuffersStats.bind(this)
     );
 
     const keyboard: InlineKeyboardButton[][] = [
       [
-        { text: 'Check size', callback_data: CommandConstants.CheckSize },
         {
           text: 'Get stats',
           callback_data: CommandConstants.GetStatsIndividual,
@@ -151,7 +139,7 @@ export class DashboardCommand extends CommandBase {
           text: 'Max connections',
           callback_data: CommandConstants.GetMaxConnections,
         },
-        { text: 'Max buffers', callback_data: CommandConstants.GetMaxBuffers },
+        { text: 'Buffers stats', callback_data: CommandConstants.BuffersStats },
       ],
     ];
 
