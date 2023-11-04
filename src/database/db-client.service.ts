@@ -53,5 +53,30 @@ export class DbClientService {
       }));
     return transformedRes;
   }
+
+  public async restart() {
+    //TODO:
+  }
+
+  public async getMaxBuffers() {
+    const res = await this.execute('SHOW shared_buffers;')
+    return res.rows[0].shared_buffers;
+  }
+
+  public async getMaxConnections() {
+    const res = await this.execute('SHOW max_connections;')
+    console.log(res);
+    return res.rows[0].max_connections;
+  }
+
+  public async setMaxConnections(value: number) {
+    const res = await this.execute('ALTER SYSTEM SET max_connections = $1', [value])
+    return res
+  }
+
+  public async setMaxBuffers(value: number) {
+    const res = await this.execute('ALTER SYSTEM SET shared_buffers = $1', [value])
+    return res
+  }
 }
 

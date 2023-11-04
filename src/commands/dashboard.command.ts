@@ -64,6 +64,32 @@ export class DashboardCommand extends CommandBase {
     this.ctx.reply("Size is: " + res.rows?.[0].pg_size_pretty);
   }
 
+  private async getSharedBuffers() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+
+    const res = await client.getMaxBuffers();
+    this.ctx.reply("Max shared buffers: " + JSON.stringify(res))
+  }
+
+  private async getMaxConnections() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+
+    const res = await client.getMaxConnections();
+    this.ctx.reply("Max connections: " + JSON.stringify(res))
+  }
+
   private async getStats() {
     const client = new DbClientService({
       database: this.connection.Database,
@@ -87,10 +113,9 @@ export class DashboardCommand extends CommandBase {
     );
 
     this.bot.action(CommandConstants.CheckSize, this.checkSize.bind(this));
-    this.bot.action(
-      CommandConstants.GetStatsIndividual,
-      this.getStats.bind(this)
-    );
+    this.bot.action(CommandConstants.GetStatsIndividual,this.getStats.bind(this));
+    this.bot.action(CommandConstants.GetMaxConnections, this.getMaxConnections.bind(this))
+    this.bot.action(CommandConstants.GetMaxBuffers, this.getSharedBuffers.bind(this))
 
     const keyboard: InlineKeyboardButton[][] = [
       [
@@ -103,7 +128,11 @@ export class DashboardCommand extends CommandBase {
       [{
         text: 'Show Dashboard',
         callback_data: CommandConstants.GetDashboard,
-      },]
+      }],
+      [
+        {text: 'Max connections', callback_data: CommandConstants.GetMaxConnections},
+        {text: 'Max buffers', callback_data: CommandConstants.GetMaxBuffers}
+      ]
     ];
 
     this.ctx.reply(

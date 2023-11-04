@@ -13,7 +13,7 @@ export class CronService implements ICronService {
   
   
   async init() {
-    cron.schedule('*/15 * * * * *', async () => {
+    cron.schedule('*/30 * * * * *', async () => {
       const connectionRepo = new ConnectionRepositoryImpl();
         const connestions = await connectionRepo.find();
         
@@ -35,12 +35,15 @@ export class CronService implements ICronService {
                 //await client.query(`SELECT pg_cancel_backend(${row.pid})`)
                 await client.query(`SELECT pg_terminate_backend(${row.pid})`)
                 this.bot.telegram.sendMessage(Number(connestions[0].Account?.Id), `The transaction exceeded the time limit: query: ${res.rows[0].query}`)
+                client.release();
               } catch (e) {
+                client.release();
                console.log(e)  
               }
             }
           }
-      }
+       
+        }
         catch(e) {
           console.log(e)
         }
