@@ -18,7 +18,6 @@ export type ctxType = NarrowedContext<
 >;
 
 export const initializersCommands: (
-  dbClient: DbClientService
 ) => Array<InitCommandType> = () => [
   initStartCommand(),
   initAddConnectionCommand(),

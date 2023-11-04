@@ -52,16 +52,7 @@ export class Bot {
 
 const configService = new ConfigService();
 
-const mockCredentialsDB: ICredentialsDB = {
-  port: 5432,
-  user: 'postgres',
-  password: 'deniskaSUPER12345',
-  database: 'r-journal1',
-  host: 'localhost',
-};
-
-const client = new DbClientService(mockCredentialsDB);
-export const bot = new Bot(configService, initializersCommands(client));
+export const bot = new Bot(configService, initializersCommands());
 
 bot.init();
 
