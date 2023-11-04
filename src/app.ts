@@ -1,14 +1,14 @@
-import { Telegraf } from 'telegraf'
-import LocalSession from 'telegraf-session-local'
-import { BotCommand } from 'telegraf/typings/core/types/typegram'
-import { InitCommandType, initializersCommands } from './commands'
-import { CommandBase } from './commands/base/command.base'
-import { CommandConstants } from './commands/constants/commands.constants'
-import { getMainMenu } from './commands/keyboards/mainMenu.keyboard'
-import { IConfigService } from './config/config.interface'
-import { ConfigService } from './config/config.service'
-import { IBotContext } from './context/context.interface'
-import { CronService } from './cron/cron.service'
+import { Telegraf } from 'telegraf';
+import LocalSession from 'telegraf-session-local';
+import { BotCommand } from 'telegraf/typings/core/types/typegram';
+import { InitCommandType, initializersCommands } from './commands';
+import { CommandBase } from './commands/base/command.base';
+import { CommandConstants } from './commands/constants/commands.constants';
+import { getMainMenu } from './commands/keyboards/mainMenu.keyboard';
+import { IConfigService } from './config/config.interface';
+import { ConfigService } from './config/config.service';
+import { IBotContext } from './context/context.interface';
+import { CronService } from './cron/cron.service';
 
 const hintCommands: BotCommand[] = [
   {
@@ -35,12 +35,7 @@ export class Bot {
   }
 
   async init() {
-    await new CronService(
-      // this.databaseService,
-      // this.cryptomusService,
-      this.bot
-    ).init();
-    //await this.databaseService.init();
+    await new CronService(this.bot).init();
     for (const command of this.commands) command.handle();
     await this.bot.launch();
     this.bot.start(ctx => {

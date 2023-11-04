@@ -85,9 +85,6 @@ export class DbClientService {
     return res;
   }
 
-
-
-
   private async checkExistLockMonitor() {
     const res = await this.execute(`SELECT EXISTS (
       SELECT 1
@@ -115,8 +112,8 @@ export class DbClientService {
         AND blockinga.datid = blockeda.datid
       WHERE NOT blockedl.granted
       AND blockinga.datname = current_database()
-      );`)
-      return res;
+      );`);
+    return res;
   }
 
   public async checkLockMonitor() {
