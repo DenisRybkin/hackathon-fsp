@@ -88,7 +88,7 @@ export class DbClientService {
 
 
 
-  public async checkExistLockMonitor() {
+  private async checkExistLockMonitor() {
     const res = await this.execute(`SELECT EXISTS (
       SELECT 1
       FROM information_schema.views
@@ -125,10 +125,20 @@ export class DbClientService {
        return res.rows.length ? res.rows : null;
     }
     else {
-      await this.checkExistLockMonitor();
+      await this.createLockMonitor();
       return await this.checkLockMonitor();
     }
-
   }
+
+
+  public async getBufferHitRatio() {
+    const res  = await this.execute(`select
+      sum(blks_hit)*100/sum(blks_hit+blks_read) as hit_ratio
+      from pg_stat_database;`
+    )
+    return Number(res.rows[0].hit_ratio);
+  }
+
+
 }
 

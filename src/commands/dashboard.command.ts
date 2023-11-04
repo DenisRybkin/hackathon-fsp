@@ -80,7 +80,33 @@ export class DashboardCommand extends CommandBase {
     this.ctx.reply(`Connections to the db: ${res.now} / ${res.max}`);
   }
 
-  private async setSharedBuffers() {
+  // private async setSharedBuffers() {
+  //   const client = new DbClientService({
+  //     database: this.connection.Database,
+  //     host: this.connection.Host,
+  //     password: this.connection.Password,
+  //     port: this.connection.Port,
+  //     user: this.connection.User,
+  //   });
+
+  //   const res = await client.getMaxBuffers();
+  //   this.ctx.reply('Max shared buffers: ' + JSON.stringify(res));
+  // }
+
+  // private async setMaxConnections() {
+  //   const client = new DbClientService({
+  //     database: this.connection.Database,
+  //     host: this.connection.Host,
+  //     password: this.connection.Password,
+  //     port: this.connection.Port,
+  //     user: this.connection.User,
+  //   });
+
+  //   const res = await client.getConnections();
+  //   this.ctx.reply('Max connections: ' + JSON.stringify(res));
+  // }
+
+  private async checkBufferHitRatio() {
     const client = new DbClientService({
       database: this.connection.Database,
       host: this.connection.Host,
@@ -88,22 +114,14 @@ export class DashboardCommand extends CommandBase {
       port: this.connection.Port,
       user: this.connection.User,
     });
-
-    const res = await client.getMaxBuffers();
-    this.ctx.reply('Max shared buffers: ' + JSON.stringify(res));
-  }
-
-  private async setMaxConnections() {
-    const client = new DbClientService({
-      database: this.connection.Database,
-      host: this.connection.Host,
-      password: this.connection.Password,
-      port: this.connection.Port,
-      user: this.connection.User,
-    });
-
-    const res = await client.getConnections();
-    this.ctx.reply('Max connections: ' + JSON.stringify(res));
+    const res = await client.getBufferHitRatio();
+    const isOk = res > 90
+    this.ctx.reply(isOk 
+      ? 'It`s ok, buffer hit ratio: ' + res 
+      : 'There is not enough memory to hold the hot "head" of data in memory. In order to use the data,' +
+        'PostgreSQL is forced to access the disk and this is slower than if the data were read from memory.' +
+        'We already need to think about increasing memory: either increase shared buffers, or increase iron memory (RAM).')
+    console.log(res);
   }
 
   private async getStats() {
@@ -143,6 +161,10 @@ export class DashboardCommand extends CommandBase {
       CommandConstants.BuffersStats,
       this.getBuffersStats.bind(this)
     );
+    this.bot.action(
+      CommandConstants.CheckBufferHitRatio,
+      this.checkBufferHitRatio.bind(this)
+    )
 
     const keyboard: InlineKeyboardButton[][] = [
       [
@@ -168,6 +190,9 @@ export class DashboardCommand extends CommandBase {
         },
         { text: 'Buffers stats', callback_data: CommandConstants.BuffersStats },
       ],
+      [
+        { text: 'Buffer hit ratio', callback_data: CommandConstants.CheckBufferHitRatio}
+      ]
     ];
 
     this.ctx.reply(
