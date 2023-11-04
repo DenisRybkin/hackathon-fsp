@@ -1,11 +1,11 @@
-import { AccountRepository } from '../domain/account.repository';
+import { IAccountRepository } from '../domain/account.repository';
 import { Account } from '../domain/entities/account.entity';
 import prisma from '../../../libs/prisma';
 import { Connection } from '../domain/entities/connection.entity';
 import { Nullable } from '../../../types/app.types';
-import { UUID, randomUUID } from 'crypto';
+import { UUID } from 'crypto';
 
-export class AccountRepositoryImpl implements AccountRepository {
+export class AccountRepositoryImpl implements IAccountRepository {
   public async findById(id: bigint): Promise<Nullable<Account>> {
     const account = await prisma.account.findUnique({
       where: { id },
@@ -28,7 +28,7 @@ export class AccountRepositoryImpl implements AccountRepository {
       firstname ?? null,
       lastname ?? null,
       connections.map(
-        ({ id, port, user, host, database, password, active }) =>
+        ({ id, port, user, host, database, password, active, dashboardUrl }) =>
           new Connection(
             port,
             user,
@@ -36,7 +36,8 @@ export class AccountRepositoryImpl implements AccountRepository {
             database,
             password,
             id as UUID,
-            active
+            active,
+            dashboardUrl
           )
       ) ?? []
     );
@@ -52,7 +53,16 @@ export class AccountRepositoryImpl implements AccountRepository {
         connections: {
           deleteMany: {},
           connectOrCreate: account.Connections.map(
-            ({ Id, Port, User, Host, Database, Password, Active }) => ({
+            ({
+              Id,
+              Port,
+              User,
+              Host,
+              Database,
+              Password,
+              Active,
+              Dashboard,
+            }) => ({
               where: { id: Id },
               create: {
                 id: Id,
@@ -62,6 +72,7 @@ export class AccountRepositoryImpl implements AccountRepository {
                 database: Database,
                 password: Password,
                 active: Active,
+                dashboardUrl: Dashboard,
               },
             })
           ),
@@ -74,7 +85,16 @@ export class AccountRepositoryImpl implements AccountRepository {
         lastname: account.Lastname,
         connections: {
           connectOrCreate: account.Connections.map(
-            ({ Id, Port, User, Host, Database, Password, Active }) => ({
+            ({
+              Id,
+              Port,
+              User,
+              Host,
+              Database,
+              Password,
+              Active,
+              Dashboard,
+            }) => ({
               where: { id: Id },
               create: {
                 id: Id,
@@ -84,6 +104,7 @@ export class AccountRepositoryImpl implements AccountRepository {
                 database: Database,
                 password: Password,
                 active: Active,
+                dashboardUrl: Dashboard,
               },
             })
           ),

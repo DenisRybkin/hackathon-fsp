@@ -27,6 +27,7 @@
     "dotenv": "^16.3.1",
     "node-cron": "^3.0.2",
     "pg": "^8.11.3",
+    "puppeteer": "^21.5.0",
     "telegraf": "^4.12.2",
     "telegraf-session-local": "^2.1.1"
   }

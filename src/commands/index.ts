@@ -3,6 +3,7 @@ import { IBotContext } from '../context/context.interface'
 import { DbClientService } from '../database/db-client.service'
 import { initAddConnectionCommand } from './add-connection.command'
 import { CommandBase } from './base/command.base'
+import { initGetDashboardCommand } from './get-dashboard.command'
 import { initGetStatsCommand } from './get-stats.command'
 import { initStartCommand } from './start.command'
 
@@ -13,6 +14,7 @@ export const initializersCommands: (
 ) => Array<InitCommandType> = (dbClient: DbClientService) => [
   initStartCommand(dbClient),
   initGetStatsCommand(dbClient),
+  initGetDashboardCommand(),
   initAddConnectionCommand(),
 ];
 

@@ -6,8 +6,10 @@ import { CommandBase } from './base/command.base';
 import { CommandConstants } from './constants/commands.constants';
 import { Account } from '../modules/account/domain/entities/account.entity';
 import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
+import { ConnectionRepositoryImpl } from '../modules/account/infrastructure/connection.repository';
 
 const accountRepo = new AccountRepositoryImpl();
+const connectionRepo = new ConnectionRepositoryImpl();
 
 class StartCommand extends CommandBase {
   constructor(
@@ -30,6 +32,9 @@ class StartCommand extends CommandBase {
         last_name ?? null,
         []
       );
+
+      const a = await connectionRepo.find();
+      console.log(a);
 
       const isAlreadyHasAccount = await accountRepo.findById(account.Id);
       if (!isAlreadyHasAccount) await accountRepo.save(account);
