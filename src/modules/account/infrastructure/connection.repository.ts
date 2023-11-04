@@ -3,13 +3,14 @@ import prisma from '../../../libs/prisma';
 import { IConnectionRepository } from '../domain/connection.repository';
 import { Connection } from '../domain/entities/connection.entity';
 import { Account } from '../domain/entities/account.entity';
+import { Memory } from '../domain/entities/memory.entity';
 
 export class ConnectionRepositoryImpl implements IConnectionRepository {
   public async find(onlyActive: boolean = true): Promise<Connection[]> {
     return prisma.connection
       .findMany({
         ...(onlyActive && { where: { active: true } }),
-        include: { account: true },
+        include: { account: true, memories: true },
       })
       .then(connections =>
         connections.map(
@@ -23,6 +24,7 @@ export class ConnectionRepositoryImpl implements IConnectionRepository {
             password,
             account,
             dashboardUrl,
+            memories,
           }) =>
             new Connection(
               port,
@@ -39,10 +41,53 @@ export class ConnectionRepositoryImpl implements IConnectionRepository {
                 account.firstname,
                 account.lastname,
                 []
-              )
+              ),
+              memories.map(({ id, usage }) => new Memory(usage, id as UUID))
             )
         )
       );
+  }
+
+  public async save(connection: Connection): Promise<void> {
+    await prisma.connection.upsert({
+      where: { id: connection.Id },
+      update: {
+        id: connection.Id,
+        port: connection.Port,
+        user: connection.User,
+        host: connection.Host,
+        database: connection.Database,
+        password: connection.Password,
+        active: connection.Active,
+        dashboardUrl: connection.Dashboard,
+        memories: {
+          deleteMany: {},
+          connectOrCreate: connection.Memories?.map(({ Id, Usage }) => ({
+            where: { id: Id },
+            create: { usage: Usage },
+          })),
+        },
+      },
+      create: {
+        id: connection.Id,
+        port: connection.Port,
+        user: connection.User,
+        host: connection.Host,
+        database: connection.Database,
+        password: connection.Password,
+        active: connection.Active,
+        dashboardUrl: connection.Dashboard,
+        account: {
+          connect: { id: connection.Account?.Id },
+        },
+        memories: {
+          connectOrCreate: connection.Memories?.map(({ Id, Usage }) => ({
+            where: { id: Id },
+            create: { usage: Usage },
+          })),
+        },
+      },
+    });
   }
 }
 

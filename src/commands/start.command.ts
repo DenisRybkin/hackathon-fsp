@@ -1,10 +1,10 @@
-import { Telegraf } from 'telegraf'
+import { Telegraf } from 'telegraf';
 
-import { IBotContext } from '../context/context.interface'
-import { Account } from '../modules/account/domain/entities/account.entity'
-import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository'
-import { CommandBase } from './base/command.base'
-import { initDashboardCommand } from './dashboard.command'
+import { IBotContext } from '../context/context.interface';
+import { Account } from '../modules/account/domain/entities/account.entity';
+import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
+import { CommandBase } from './base/command.base';
+import { initDashboardCommand } from './dashboard.command';
 
 const accountRepo = new AccountRepositoryImpl();
 
@@ -16,7 +16,6 @@ class StartCommand extends CommandBase {
   handle() {
     this.bot.start(async ctx => {
       const { id, username, first_name, last_name, is_bot } = ctx.message.from;
-      console.log(id);
 
       if (is_bot) return ctx.reply('Sorry, we dont work with bots');
 

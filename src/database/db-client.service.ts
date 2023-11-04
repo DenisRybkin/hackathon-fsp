@@ -62,9 +62,13 @@ export class DbClientService {
     return res.rows[0].shared_buffers;
   }
 
-  public async getMaxConnections() {
+  public async getConnections() {
     const res = await this.execute('SHOW max_connections;');
-    return res.rows[0].max_connections;
+    const now = await this.execute(
+      'SELECT count(*) FROM pg_stat_activity where datname=$1',
+      [this.name]
+    );
+    return { max: res.rows[0].max_connections, now: now.rows[0].count };
   }
 
   public async setMaxConnections(value: number) {

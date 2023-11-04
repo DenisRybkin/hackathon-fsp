@@ -1,13 +1,12 @@
-import { Telegraf } from 'telegraf'
-import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram'
-import { IBotContext } from '../context/context.interface'
-import { DbClientService } from '../database/db-client.service'
-import { Connection } from '../modules/account/domain/entities/connection.entity'
-import { screenshoter } from '../services/screenshot.service'
-import { CommandBase } from './base/command.base'
-import { CommandConstants } from './constants/commands.constants'
-import { ctxType } from './index'
-
+import { Telegraf } from 'telegraf';
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
+import { IBotContext } from '../context/context.interface';
+import { DbClientService } from '../database/db-client.service';
+import { Connection } from '../modules/account/domain/entities/connection.entity';
+import { screenshoter } from '../services/screenshot.service';
+import { CommandBase } from './base/command.base';
+import { CommandConstants } from './constants/commands.constants';
+import { ctxType } from './index';
 
 const transformStats = (res: any) => {
   const transformedRes = res.map(item => ({
@@ -68,7 +67,7 @@ export class DashboardCommand extends CommandBase {
     );
   }
 
-  private async getMaxConnections() {
+  private async getConnections() {
     const client = new DbClientService({
       database: this.connection.Database,
       host: this.connection.Host,
@@ -77,8 +76,8 @@ export class DashboardCommand extends CommandBase {
       user: this.connection.User,
     });
 
-    const res = await client.getMaxConnections();
-    this.ctx.reply('Max connections: ' + JSON.stringify(res));
+    const res = await client.getConnections();
+    this.ctx.reply(`Connections to the db: ${res.now} / ${res.max}`);
   }
 
   private async setSharedBuffers() {
@@ -91,7 +90,7 @@ export class DashboardCommand extends CommandBase {
     });
 
     const res = await client.getMaxBuffers();
-    this.ctx.reply("Max shared buffers: " + JSON.stringify(res))
+    this.ctx.reply('Max shared buffers: ' + JSON.stringify(res));
   }
 
   private async setMaxConnections() {
@@ -102,9 +101,9 @@ export class DashboardCommand extends CommandBase {
       port: this.connection.Port,
       user: this.connection.User,
     });
-     
-    const res = await client.getMaxConnections();
-    this.ctx.reply("Max connections: " + JSON.stringify(res))
+
+    const res = await client.getConnections();
+    this.ctx.reply('Max connections: ' + JSON.stringify(res));
   }
 
   private async getStats() {
@@ -116,7 +115,10 @@ export class DashboardCommand extends CommandBase {
       user: this.connection.User,
     });
     const res = await client.execute(
-      `SELECT * FROM pg_stat_activity where datname='${this.connection.Database}'`
+      `SELECT * FROM pg_stat_activity
+      where datname=$1
+      AND query NOT LIKE '%FROM pg_stat_activity%'`,
+      [this.connection.Database]
     );
     for (const item of transformStats(res.rows)) {
       this.ctx.reply(item);
@@ -134,7 +136,7 @@ export class DashboardCommand extends CommandBase {
     );
     this.bot.action(
       CommandConstants.GetMaxConnections,
-      this.getMaxConnections.bind(this)
+      this.getConnections.bind(this)
     );
     this.bot.action(
       CommandConstants.BuffersStats,
