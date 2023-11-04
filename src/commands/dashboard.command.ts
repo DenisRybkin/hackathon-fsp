@@ -11,6 +11,21 @@ import { ctxType } from './get-stats.command';
 
 const accountRepo = new AccountRepositoryImpl();
 
+const transformStats = (res: any) => {
+  const transformedRes = res.rows.map(item => ({
+    datid: item.datid,
+    datname: item.datname,
+    pid: item.pid,
+    usename: item.usename,
+    application_name: item.application_name,
+    query_start: item.query_start,
+    state_change: item.state_change,
+    state: item.state,
+  }));
+
+  return transformedRes;
+};
+
 export class DashboardCommand extends CommandBase {
   constructor(
     bot: Telegraf<IBotContext>,
@@ -60,7 +75,7 @@ export class DashboardCommand extends CommandBase {
     const res = await client.execute(
       `SELECT * FROM pg_stat_activity where datname='${this.connection.Database}'`
     );
-    this.ctx.reply(JSON.stringify(res));
+    this.ctx.reply(JSON.stringify(transformStats(res)));
   }
 
   handle(): void {
