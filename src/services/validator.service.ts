@@ -30,7 +30,7 @@ export class ValidatorService {
         }
     }
     static unusedIndexesValidator(rows: any) {
-        if(rows.length) {
+        if(!rows.length) {
             return '🌈There are no unused indexes';
         } else {
             return '❗️Unused indexes relids: ' + rows.map(r => r.relid).join(', ');
