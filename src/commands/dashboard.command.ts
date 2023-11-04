@@ -1,12 +1,12 @@
-import { Telegraf } from 'telegraf';
-import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
-import { IBotContext } from '../context/context.interface';
-import { DbClientService } from '../database/db-client.service';
-import { Connection } from '../modules/account/domain/entities/connection.entity';
-import { screenshoter } from '../services/screenshot.service';
-import { CommandBase } from './base/command.base';
-import { CommandConstants } from './constants/commands.constants';
-import { ctxType } from './index';
+import { Telegraf } from 'telegraf'
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram'
+import { IBotContext } from '../context/context.interface'
+import { DbClientService } from '../database/db-client.service'
+import { Connection } from '../modules/account/domain/entities/connection.entity'
+import { screenshoter } from '../services/screenshot.service'
+import { CommandBase } from './base/command.base'
+import { CommandConstants } from './constants/commands.constants'
+import { ctxType } from './index'
 
 const transformStats = (res: any) => {
   const transformedRes = res.map(item => ({
@@ -15,8 +15,8 @@ const transformStats = (res: any) => {
     pid: 'process id:' + item.pid,
     usename: 'username: ' + item.usename,
     application_name: 'app name: ' + item.application_name,
-    query_start: 'start request date: ' + item.query_start,
-    state_change: 'date last change: ' + item.state_change,
+    query_start: 'start request date: ' + new Date(item.query_start)?.toLocaleString('en'),
+    state_change: 'date last change: ' + new Date(item.state_change).toLocaleString('en'),
     state: 'process state: ' + item.state,
   }));
 
@@ -124,6 +124,7 @@ export class DashboardCommand extends CommandBase {
       this.ctx.reply(item);
     }
   }
+
 
   handle(): void {
     this.bot.action(

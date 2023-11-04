@@ -88,14 +88,13 @@ export class DbClientService {
 
 
 
-  private async checkExistLockMonitor() {
+  public async checkExistLockMonitor() {
     const res = await this.execute(`SELECT EXISTS (
       SELECT 1
       FROM information_schema.views
       WHERE table_name = 'lock_monitor'
     );`);
-    console.log(res);
-    return res.rows[0].exist as boolean;
+    return !!res.rows[0]?.exists as boolean;
   }
 
   private async createLockMonitor() {
@@ -120,10 +119,10 @@ export class DbClientService {
       return res;
   }
 
-  private async checkLockMonitor() {
+  public async checkLockMonitor() {
     if(await this.checkExistLockMonitor()) {
        const res = await this.execute(`SELECT * from lock_monitor;`)
-       return res.rows.length ? res.rows[0] : null;
+       return res.rows.length ? res.rows : null;
     }
     else {
       await this.checkExistLockMonitor();
