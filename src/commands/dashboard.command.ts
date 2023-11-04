@@ -67,9 +67,13 @@ export class DashboardCommand extends CommandBase {
     );
 
     this.bot.action(CommandConstants.CheckSize, this.checkSize.bind(this));
+    this.bot.action(CommandConstants.GetStatsIndividual, this.getStats.bind(this));
 
     const keyboard: InlineKeyboardButton[][] = [
-      [{ text: 'Check size', callback_data: CommandConstants.CheckSize }],
+      [
+        { text: 'Check size', callback_data: CommandConstants.CheckSize },
+        { text: 'Get stats', callback_data: CommandConstants.GetStatsIndividual}
+      ],
     ];
 
     if (this.connection.Dashboard)
