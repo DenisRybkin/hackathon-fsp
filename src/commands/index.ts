@@ -6,6 +6,7 @@ import { CommandBase } from './base/command.base';
 import { initGetStatsCommand } from './get-stats.command';
 import { initInitCommand } from './init.command';
 import { initStartCommand } from './start.command';
+import { initGetDashboardCommand } from './get-dashboard.command';
 
 export type InitCommandType = (bot: Telegraf<IBotContext>) => CommandBase;
 
@@ -15,6 +16,7 @@ export const initializersCommands: (
   initStartCommand(dbClient),
   initGetStatsCommand(dbClient),
   initInitCommand(),
+  initGetDashboardCommand(),
   initAddConnectionCommand(),
 ];
 

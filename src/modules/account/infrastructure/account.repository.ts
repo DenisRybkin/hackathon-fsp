@@ -28,7 +28,7 @@ export class AccountRepositoryImpl implements IAccountRepository {
       firstname ?? null,
       lastname ?? null,
       connections.map(
-        ({ id, port, user, host, database, password, active }) =>
+        ({ id, port, user, host, database, password, active, dashboardUrl }) =>
           new Connection(
             port,
             user,
@@ -36,7 +36,8 @@ export class AccountRepositoryImpl implements IAccountRepository {
             database,
             password,
             id as UUID,
-            active
+            active,
+            dashboardUrl
           )
       ) ?? []
     );
@@ -52,7 +53,16 @@ export class AccountRepositoryImpl implements IAccountRepository {
         connections: {
           deleteMany: {},
           connectOrCreate: account.Connections.map(
-            ({ Id, Port, User, Host, Database, Password, Active }) => ({
+            ({
+              Id,
+              Port,
+              User,
+              Host,
+              Database,
+              Password,
+              Active,
+              Dashboard,
+            }) => ({
               where: { id: Id },
               create: {
                 id: Id,
@@ -62,6 +72,7 @@ export class AccountRepositoryImpl implements IAccountRepository {
                 database: Database,
                 password: Password,
                 active: Active,
+                dashboardUrl: Dashboard,
               },
             })
           ),
@@ -74,7 +85,16 @@ export class AccountRepositoryImpl implements IAccountRepository {
         lastname: account.Lastname,
         connections: {
           connectOrCreate: account.Connections.map(
-            ({ Id, Port, User, Host, Database, Password, Active }) => ({
+            ({
+              Id,
+              Port,
+              User,
+              Host,
+              Database,
+              Password,
+              Active,
+              Dashboard,
+            }) => ({
               where: { id: Id },
               create: {
                 id: Id,
@@ -84,6 +104,7 @@ export class AccountRepositoryImpl implements IAccountRepository {
                 database: Database,
                 password: Password,
                 active: Active,
+                dashboardUrl: Dashboard,
               },
             })
           ),

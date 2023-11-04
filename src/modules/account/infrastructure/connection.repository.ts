@@ -10,7 +10,17 @@ export class ConnectionRepositoryImpl implements IConnectionRepository {
       .findMany({ include: { account: true } })
       .then(connections =>
         connections.map(
-          ({ id, active, port, user, host, database, password, account }) =>
+          ({
+            id,
+            active,
+            port,
+            user,
+            host,
+            database,
+            password,
+            account,
+            dashboardUrl,
+          }) =>
             new Connection(
               port,
               user,
@@ -19,6 +29,7 @@ export class ConnectionRepositoryImpl implements IConnectionRepository {
               password,
               id as UUID,
               active,
+              dashboardUrl,
               new Account(
                 account.id,
                 account.username,
