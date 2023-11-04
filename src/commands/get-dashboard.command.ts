@@ -1,54 +1,64 @@
-import { Telegraf } from 'telegraf'
-import { IBotContext } from '../context/context.interface'
-import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository'
-import { screenshoter } from '../services/screenshot.service'
-import { CommandBase } from './base/command.base'
-import { CommandConstants } from './constants/commands.constants'
-import { ctxType } from './get-stats.command'
+import { Telegraf } from 'telegraf';
+import { IBotContext } from '../context/context.interface';
+import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
+import { screenshoter } from '../services/screenshot.service';
+import { CommandBase } from './base/command.base';
+import { CommandConstants } from './constants/commands.constants';
+import { ctxType } from './get-stats.command';
+import { Connection } from '../modules/account/domain/entities/connection.entity';
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
 
 const accountRepo = new AccountRepositoryImpl();
 
-export class GetDashboardCommand extends CommandBase {
-  constructor(bot: Telegraf<IBotContext>) {
+export class DashboardCommand extends CommandBase {
+  constructor(
+    bot: Telegraf<IBotContext>,
+    private readonly ctx: ctxType,
+    private readonly connection: Connection
+  ) {
     super(bot);
   }
 
-  private initActions() {
-    this.bot.action(
-      CommandConstants.GetDashboard,
-      this.sendDashboard.bind(this)
-    );
-  }
-
-  private async sendDashboard(ctx: ctxType) {
-    const { id } = ctx.message.from;
-    const connectionId = 'df60c546-188c-4365-a5b6-26377739ec0f';
-
-    const account = await accountRepo.findById(BigInt(id));
-
-    if (!account) return ctx.reply('No such account');
-
-    const connection = account?.Connections.find(
-      ({ Id }) => Id === connectionId
-    );
-
-    if (!connection?.Dashboard)
-      return ctx.reply('This connection has no dashboard');
-
-    ctx.reply('Loading...');
+  private async sendDashboard() {
+    this.ctx.reply('Loading...');
     try {
-      const { buffer, path } = await screenshoter.save(connection.Dashboard);
-      ctx.sendPhoto({ source: buffer, filename: path });
+      const { buffer, path } = await screenshoter.save(
+        this.connection.Dashboard ?? ''
+      );
+      this.ctx.sendPhoto({ source: buffer, filename: path });
     } catch (_) {
-      ctx.reply('Something went wrong');
+      this.ctx.reply('Something went wrong');
     }
   }
 
   handle(): void {
-    this.bot.command(CommandConstants.GetDashboard, this.sendDashboard.bind(this));
+    this.bot.action(
+      CommandConstants.GetDashboard,
+      this.sendDashboard.bind(this)
+    );
+
+    const keyboard: InlineKeyboardButton[][] = [];
+
+    if (this.connection.Dashboard)
+      keyboard.push([
+        {
+          text: 'Show Dashboard',
+          callback_data: CommandConstants.GetDashboard,
+        },
+      ]);
+
+    this.ctx.reply(
+      `Connection\n${this.connection.User}:${this.connection.Database}`,
+      {
+        reply_markup: {
+          inline_keyboard: keyboard,
+        },
+      }
+    );
   }
 }
 
-export const initGetDashboardCommand = () => (bot: Telegraf<IBotContext>) =>
-  new GetDashboardCommand(bot);
+export const initGetDashboardCommand =
+  (connection: Connection, ctx: ctxType) => (bot: Telegraf<IBotContext>) =>
+    new DashboardCommand(bot, ctx, connection);
 

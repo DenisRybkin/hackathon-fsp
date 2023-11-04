@@ -1,20 +1,19 @@
-import { Telegraf } from 'telegraf'
+import { Telegraf } from 'telegraf';
 
-import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram'
-import { IBotContext } from '../context/context.interface'
-import { DbClientService } from '../database/db-client.service'
-import { Account } from '../modules/account/domain/entities/account.entity'
-import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository'
-import { CommandBase } from './base/command.base'
-import { CommandConstants } from './constants/commands.constants'
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
+import { IBotContext } from '../context/context.interface';
+import { DbClientService } from '../database/db-client.service';
+import { Account } from '../modules/account/domain/entities/account.entity';
+import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
+import { CommandBase } from './base/command.base';
+import { CommandConstants } from './constants/commands.constants';
+import { Connection } from '../modules/account/domain/entities/connection.entity';
+import { initGetDashboardCommand } from './get-dashboard.command';
 
 const accountRepo = new AccountRepositoryImpl();
 
 class StartCommand extends CommandBase {
-  constructor(
-    bot: Telegraf<IBotContext>,
-    private readonly dbClient: DbClientService
-  ) {
+  constructor(bot: Telegraf<IBotContext>) {
     super(bot);
   }
 
@@ -35,28 +34,33 @@ class StartCommand extends CommandBase {
       const isAlreadyHasAccount = await accountRepo.findById(account.Id);
       if (!isAlreadyHasAccount) await accountRepo.save(account);
 
-      const inlineKeyboard: InlineKeyboardButton[][] = []
-      if(isAlreadyHasAccount) {
-        inlineKeyboard.push([{
-          text: 'Stats activity',
-          callback_data: CommandConstants.GetStats,
-        }])
-        inlineKeyboard.push([{
-          text: 'Dashboard',
-          callback_data: CommandConstants.GetDashboard,
-        }])
-      }
+      if (!isAlreadyHasAccount?.Connections.length)
+        return ctx.reply(
+          'You not have db connections yet\nAdd new connection /add_connection'
+        );
 
-      ctx.reply('How can I help?', {
+      ctx.reply('Connections', {
         reply_markup: {
-          inline_keyboard: inlineKeyboard,
+          inline_keyboard: [
+            ...isAlreadyHasAccount.Connections.map(({ Id, User, Database }) => [
+              {
+                text: `${User}:${Database}`,
+                callback_data: Id,
+              },
+            ]),
+          ],
         },
       });
+
+      for (let connection of isAlreadyHasAccount.Connections) {
+        this.bot.action(connection.Id, ctx => {
+          initGetDashboardCommand(connection, ctx)(this.bot).handle();
+        });
+      }
     });
   }
 }
 
-export const initStartCommand =
-  (dbClient: DbClientService) => (bot: Telegraf<IBotContext>) =>
-    new StartCommand(bot, dbClient);
+export const initStartCommand = () => (bot: Telegraf<IBotContext>) =>
+  new StartCommand(bot);
 
