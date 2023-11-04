@@ -45,7 +45,8 @@ export class DashboardCommand extends CommandBase {
       'SELECT pg_size_pretty(pg_database_size($1))',
       [this.connection.Database]
     );
-    this.ctx.reply(JSON.stringify(res));
+
+    this.ctx.reply(JSON.stringify(res.rows?.[0]));
   }
 
   handle(): void {
