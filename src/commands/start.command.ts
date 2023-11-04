@@ -4,7 +4,7 @@ import { IBotContext } from '../context/context.interface';
 import { Account } from '../modules/account/domain/entities/account.entity';
 import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
 import { CommandBase } from './base/command.base';
-import { initGetDashboardCommand } from './get-dashboard.command';
+import { initDashboardCommand } from './dashboard.command';
 
 const accountRepo = new AccountRepositoryImpl();
 
@@ -50,7 +50,7 @@ class StartCommand extends CommandBase {
 
       for (let connection of isAlreadyHasAccount.Connections) {
         this.bot.action(connection.Id, ctx => {
-          initGetDashboardCommand(connection, ctx)(this.bot).handle();
+          initDashboardCommand(connection, ctx)(this.bot).handle();
         });
       }
     });

@@ -31,9 +31,9 @@ export class DbClientService {
     return res;
   }
 
-  public async execute(command: string): Promise<any> {
+  public async execute(query: string, values?: any[]): Promise<any> {
     const client = await this.pool.connect();
-    const res = await client.query(command);
+    const res = await client.query(query, values);
     client.release();
     return res;
   }

@@ -46,8 +46,8 @@ class AddConnectionCommand extends CommandBase {
       return ctx.reply(`${(e as any)?.code} Someting went wrong`);
     }
 
-    // const { port, host, database, password, user } = credentials;
-    // account.addConnection(new Connection(port, user, host, database, password));
+    const { port, host, database, password, user } = credentials;
+    account.addConnection(new Connection(port, user, host, database, password));
 
     await accountRepo.save(account);
     ctx.reply('Connection Successfuly added');
