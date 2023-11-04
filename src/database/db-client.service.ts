@@ -1,4 +1,4 @@
-import { Pool } from 'pg'
+import { Client, Query, QueryResult } from 'pg';
 
 export interface ICredentialsDB {
   readonly user: string;
@@ -9,52 +9,37 @@ export interface ICredentialsDB {
 }
 
 export class DbClientService {
-  private pool: Pool;
+  private config: ICredentialsDB;
   public name: string;
 
   constructor(credentials: ICredentialsDB) {
     this.name = credentials.database;
-    this.pool = new Pool({
-      user: credentials.user,
-      host: credentials.host,
-      database: credentials.database,
-      password: credentials.password,
-      port: credentials.port,
-    });
+    this.config = credentials;
   }
 
-  static async CheckConnection(config: ICredentialsDB) {
-    const pool = new Pool(config);
-    const client = await pool.connect();
-    const res = await client.query('select * from pg_stat_activity;');
-    client.release();
+  private Client(): Client {
+    return new Client(this.config);
+  }
+
+  private async process<T>(fn: (client: Client) => T): Promise<T> {
+    const client = this.Client();
+    await client.connect();
+    const res = await fn(client);
+    await client.end();
     return res;
   }
 
-  public async execute(query: string, values?: any[]): Promise<any> {
-    const client = await this.pool.connect();
-    const res = await client.query(query, values);
-    client.release();
-    return res;
+  public async CheckConnection() {
+    return this.process(client =>
+      client.query('select * from pg_stat_activity;')
+    );
   }
 
-  public async getStatsActivity() {
-    const res = await this.execute('SELECT * FROM pg_stat_activity;');
-    const transformedRes = res.rows.map(item => ({
-      datid: item.datid,
-      datname: item.datname,
-      pid: item.pid,
-      usename: item.usename,
-      application_name: item.application_name,
-      query_start: item.query_start,
-      state_change: item.state_change,
-      state: item.state,
-    }));
-    return transformedRes;
-  }
-
-  public async restart() {
-    //TODO:
+  public async execute<V extends any[]>(
+    query: string,
+    values?: V
+  ): Promise<QueryResult<any>> {
+    return this.process(client => client.query(query, values));
   }
 
   public async getMaxBuffers() {
@@ -68,6 +53,7 @@ export class DbClientService {
       'SELECT count(*) FROM pg_stat_activity where datname=$1',
       [this.name]
     );
+
     return { max: res.rows[0].max_connections, now: now.rows[0].count };
   }
 
@@ -113,29 +99,34 @@ export class DbClientService {
       WHERE NOT blockedl.granted
       AND blockinga.datname = current_database()
       );`);
+
     return res;
   }
 
   public async checkLockMonitor() {
-    if(await this.checkExistLockMonitor()) {
-       const res = await this.execute(`SELECT * from lock_monitor;`)
-       return res.rows.length ? res.rows : null;
-    }
-    else {
+    if (await this.checkExistLockMonitor()) {
+      const res = await this.execute(`SELECT * from lock_monitor;`);
+      return res.rows.length ? res.rows : null;
+    } else {
       await this.createLockMonitor();
       return await this.checkLockMonitor();
     }
   }
 
-
   public async getBufferHitRatio() {
-    const res  = await this.execute(`select
+    const res = await this.execute(`select
       sum(blks_hit)*100/sum(blks_hit+blks_read) as hit_ratio
-      from pg_stat_database;`
-    )
+      from pg_stat_database;`);
     return Number(res.rows[0].hit_ratio);
   }
 
-
+  public async longTransactions() {
+    return this.execute(
+      `SELECT pid, now() - pg_stat_activity.query_start AS duration, query, query_id state FROM pg_stat_activity 
+    WHERE query_start IS NOT NULL
+    AND (now() - pg_stat_activity.query_start) > interval '10 second'
+    AND query NOT LIKE '%FROM pg_stat_activity%'`
+    ).then(res => res.rows);
+  }
 }
 
