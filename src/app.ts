@@ -35,12 +35,7 @@ export class Bot {
   }
 
   async init() {
-    await new CronService(
-      // this.databaseService,
-      // this.cryptomusService,
-      this.bot
-    ).init();
-    //await this.databaseService.init();
+    await new CronService(this.bot).init();
     for (const command of this.commands) command.handle();
     await this.bot.launch();
     this.bot.start(ctx => {

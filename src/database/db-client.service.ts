@@ -1,4 +1,4 @@
-import { Pool } from 'pg'
+import { Pool } from 'pg';
 
 export interface ICredentialsDB {
   readonly user: string;
@@ -85,9 +85,6 @@ export class DbClientService {
     return res;
   }
 
-
-
-
   public async checkExistLockMonitor() {
     const res = await this.execute(`SELECT EXISTS (
       SELECT 1
@@ -115,20 +112,18 @@ export class DbClientService {
         AND blockinga.datid = blockeda.datid
       WHERE NOT blockedl.granted
       AND blockinga.datname = current_database()
-      );`)
-      return res;
+      );`);
+    return res;
   }
 
   public async checkLockMonitor() {
-    if(await this.checkExistLockMonitor()) {
-       const res = await this.execute(`SELECT * from lock_monitor;`)
-       return res.rows.length ? res.rows : null;
-    }
-    else {
-      await this.checkExistLockMonitor();
+    if (await this.checkExistLockMonitor()) {
+      const res = await this.execute(`SELECT * from lock_monitor;`);
+      return res.rows.length ? res.rows : null;
+    } else {
+      await this.createLockMonitor();
       return await this.checkLockMonitor();
     }
-
   }
 }
 
