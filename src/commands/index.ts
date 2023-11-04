@@ -13,7 +13,6 @@ export const initializersCommands: (
 ) => Array<InitCommandType> = (dbClient: DbClientService) => [
   initStartCommand(),
   initGetStatsCommand(dbClient),
-
   initAddConnectionCommand(),
 ];
 

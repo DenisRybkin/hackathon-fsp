@@ -1,13 +1,9 @@
 import { Telegraf } from 'telegraf';
 
-import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
 import { IBotContext } from '../context/context.interface';
-import { DbClientService } from '../database/db-client.service';
 import { Account } from '../modules/account/domain/entities/account.entity';
 import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
 import { CommandBase } from './base/command.base';
-import { CommandConstants } from './constants/commands.constants';
-import { Connection } from '../modules/account/domain/entities/connection.entity';
 import { initGetDashboardCommand } from './get-dashboard.command';
 
 const accountRepo = new AccountRepositoryImpl();

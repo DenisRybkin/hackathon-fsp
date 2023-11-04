@@ -1,7 +1,7 @@
 import { Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters';
 import { IBotContext } from '../context/context.interface';
-import { ICredentialsDB } from '../database/db-client.service';
+import { DbClientService, ICredentialsDB } from '../database/db-client.service';
 import { CommandBase } from './base/command.base';
 import { CommandConstants } from './constants/commands.constants';
 import { ctxType } from './get-stats.command';
@@ -36,8 +36,18 @@ class AddConnectionCommand extends CommandBase {
       return ctx.reply('Invalid data!');
     delete this.credentials[userId].step;
 
-    const { port, host, database, password, user } = credentials;
-    account.addConnection(new Connection(port, user, host, database, password));
+    try {
+      delete credentials.step;
+      await DbClientService.CheckConnection({
+        ...(credentials as ICredentialsDB),
+      });
+    } catch (e) {
+      console.log(e);
+      return ctx.reply(`${(e as any)?.code} Someting went wrong`);
+    }
+
+    // const { port, host, database, password, user } = credentials;
+    // account.addConnection(new Connection(port, user, host, database, password));
 
     await accountRepo.save(account);
     ctx.reply('Connection Successfuly added');
