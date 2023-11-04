@@ -1,13 +1,13 @@
-import { Telegraf } from 'telegraf'
-import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram'
-import { IBotContext } from '../context/context.interface'
-import { DbClientService } from '../database/db-client.service'
-import { Connection } from '../modules/account/domain/entities/connection.entity'
-import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository'
-import { screenshoter } from '../services/screenshot.service'
-import { CommandBase } from './base/command.base'
-import { CommandConstants } from './constants/commands.constants'
-import { ctxType } from './get-stats.command'
+import { Telegraf } from 'telegraf';
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
+import { IBotContext } from '../context/context.interface';
+import { DbClientService } from '../database/db-client.service';
+import { Connection } from '../modules/account/domain/entities/connection.entity';
+import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository';
+import { screenshoter } from '../services/screenshot.service';
+import { CommandBase } from './base/command.base';
+import { CommandConstants } from './constants/commands.constants';
+import { ctxType } from './get-stats.command';
 
 const accountRepo = new AccountRepositoryImpl();
 
@@ -57,7 +57,9 @@ export class DashboardCommand extends CommandBase {
       port: this.connection.Port,
       user: this.connection.User,
     });
-    const res = await client.execute(`SELECT * FROM pg_stat_activity where datname='${this.connection.Database}'`);
+    const res = await client.execute(
+      `SELECT * FROM pg_stat_activity where datname='${this.connection.Database}'`
+    );
     this.ctx.reply(JSON.stringify(res));
   }
 
@@ -68,9 +70,19 @@ export class DashboardCommand extends CommandBase {
     );
 
     this.bot.action(CommandConstants.CheckSize, this.checkSize.bind(this));
+    this.bot.action(
+      CommandConstants.GetStatsIndividual,
+      this.getStats.bind(this)
+    );
 
     const keyboard: InlineKeyboardButton[][] = [
-      [{ text: 'Check size', callback_data: CommandConstants.CheckSize }],
+      [
+        { text: 'Check size', callback_data: CommandConstants.CheckSize },
+        {
+          text: 'Get stats',
+          callback_data: CommandConstants.GetStatsIndividual,
+        },
+      ],
     ];
 
     if (this.connection.Dashboard)
