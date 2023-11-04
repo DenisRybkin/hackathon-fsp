@@ -26,7 +26,7 @@ export class Bot {
   commands: CommandBase[];
   constructor(
     private readonly configService: IConfigService,
-    private readonly initializersCommands: Array<InitCommandType>
+    initializersCommands: Array<InitCommandType>
   ) {
     this.bot = new Telegraf<IBotContext>(this.configService.get('TOKEN'));
     this.bot.telegram.setMyCommands(hintCommands);

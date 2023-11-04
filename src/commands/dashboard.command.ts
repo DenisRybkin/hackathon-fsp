@@ -1,34 +1,29 @@
-import { NarrowedContext, Telegraf } from 'telegraf'
-import { CallbackQuery, InlineKeyboardButton, Update } from 'telegraf/typings/core/types/typegram'
+import { Telegraf } from 'telegraf'
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram'
 import { IBotContext } from '../context/context.interface'
 import { DbClientService } from '../database/db-client.service'
 import { Connection } from '../modules/account/domain/entities/connection.entity'
 import { screenshoter } from '../services/screenshot.service'
 import { CommandBase } from './base/command.base'
 import { CommandConstants } from './constants/commands.constants'
+import { ctxType } from './index'
 
-export type ctxType = NarrowedContext<
-  IBotContext,
-  | Update.CallbackQueryUpdate<CallbackQuery>
-  | {
-      message: any;
-      update_id: number;
-    }
->;
 
 const transformStats = (res: any) => {
   const transformedRes = res.map(item => ({
-    datid: "db id: " + item.datid,
-    datname: "username db name: " + item.datname,
-    pid: "process id:" +item.pid,
-    usename: "username: " + item.usename,
-    application_name: "app name: " + item.application_name,
-    query_start: "start request date: " + item.query_start,
-    state_change: "date last change: " + item.state_change,
-    state: "process state: " + item.state,
+    datid: 'db id: ' + item.datid,
+    datname: 'username db name: ' + item.datname,
+    pid: 'process id:' + item.pid,
+    usename: 'username: ' + item.usename,
+    application_name: 'app name: ' + item.application_name,
+    query_start: 'start request date: ' + item.query_start,
+    state_change: 'date last change: ' + item.state_change,
+    state: 'process state: ' + item.state,
   }));
 
-  return transformedRes.map(item => Object.values(item).map(item => item + '\n'));
+  return transformedRes.map(item =>
+    Object.values(item).reduce((acc, cur) => `${acc}\n${cur}`, '')
+  );
 };
 
 export class DashboardCommand extends CommandBase {
@@ -52,24 +47,7 @@ export class DashboardCommand extends CommandBase {
     }
   }
 
-  private async checkSize() {
-    const clinet = new DbClientService({
-      database: this.connection.Database,
-      host: this.connection.Host,
-      password: this.connection.Password,
-      port: this.connection.Port,
-      user: this.connection.User,
-    });
-
-    const res = await clinet.execute(
-      'SELECT pg_size_pretty(pg_database_size($1))',
-      [this.connection.Database]
-    );
-
-    this.ctx.reply("Size is: " + res.rows?.[0].pg_size_pretty);
-  }
-
-  private async getSharedBuffers() {
+  private async getBuffersStats() {
     const client = new DbClientService({
       database: this.connection.Database,
       host: this.connection.Host,
@@ -78,8 +56,16 @@ export class DashboardCommand extends CommandBase {
       user: this.connection.User,
     });
 
-    const res = await client.getMaxBuffers();
-    this.ctx.reply("Max shared buffers: " + JSON.stringify(res))
+    const maxsize = await client.getMaxBuffers();
+
+    const size = await client.execute(
+      'SELECT pg_size_pretty(pg_database_size($1))',
+      [this.connection.Database]
+    );
+
+    this.ctx.reply(
+      `Used disk size is: ${size.rows?.[0].pg_size_pretty} / ${maxsize}`
+    );
   }
 
   private async getMaxConnections() {
@@ -92,7 +78,7 @@ export class DashboardCommand extends CommandBase {
     });
 
     const res = await client.getMaxConnections();
-    this.ctx.reply("Max connections: " + JSON.stringify(res))
+    this.ctx.reply('Max connections: ' + JSON.stringify(res));
   }
 
   private async setSharedBuffers() {
@@ -132,8 +118,8 @@ export class DashboardCommand extends CommandBase {
     const res = await client.execute(
       `SELECT * FROM pg_stat_activity where datname='${this.connection.Database}'`
     );
-    for (const item of (transformStats(res.rows) as string[]) ) {
-      await this.ctx.replyWithHTML(item)
+    for (const item of transformStats(res.rows)) {
+      this.ctx.reply(item);
     }
   }
 
@@ -142,28 +128,43 @@ export class DashboardCommand extends CommandBase {
       CommandConstants.GetDashboard,
       this.sendDashboard.bind(this)
     );
-
-    this.bot.action(CommandConstants.CheckSize, this.checkSize.bind(this));
-    this.bot.action(CommandConstants.GetStatsIndividual,this.getStats.bind(this));
-    this.bot.action(CommandConstants.GetMaxConnections, this.getMaxConnections.bind(this))
-    this.bot.action(CommandConstants.GetMaxBuffers, this.getSharedBuffers.bind(this))
+    this.bot.action(
+      CommandConstants.GetStatsIndividual,
+      this.getStats.bind(this)
+    );
+    this.bot.action(
+      CommandConstants.GetMaxConnections,
+      this.getMaxConnections.bind(this)
+    );
+    this.bot.action(
+      CommandConstants.BuffersStats,
+      this.getBuffersStats.bind(this)
+    );
 
     const keyboard: InlineKeyboardButton[][] = [
       [
-        { text: 'Check size', callback_data: CommandConstants.CheckSize },
         {
           text: 'Get stats',
           callback_data: CommandConstants.GetStatsIndividual,
         },
       ],
-      [{
-        text: 'Show Dashboard',
-        callback_data: CommandConstants.GetDashboard,
-      }],
       [
-        {text: 'Max connections', callback_data: CommandConstants.GetMaxConnections},
-        {text: 'Max buffers', callback_data: CommandConstants.GetMaxBuffers}
-      ]
+        ...(this.connection.Dashboard?.length
+          ? [
+              {
+                text: 'Show Dashboard',
+                callback_data: CommandConstants.GetDashboard,
+              },
+            ]
+          : []),
+      ],
+      [
+        {
+          text: 'Max connections',
+          callback_data: CommandConstants.GetMaxConnections,
+        },
+        { text: 'Buffers stats', callback_data: CommandConstants.BuffersStats },
+      ],
     ];
 
     this.ctx.reply(

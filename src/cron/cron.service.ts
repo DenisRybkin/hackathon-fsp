@@ -1,53 +1,70 @@
-import cron from 'node-cron'
-import { Pool } from 'pg'
-import { Telegraf } from 'telegraf'
-import { IBotContext } from '../context/context.interface'
-import { ConnectionRepositoryImpl } from '../modules/account/infrastructure/connection.repository'
-import { ICronService } from './cron.interface'
+import cron from 'node-cron';
+import { Pool } from 'pg';
+import { Telegraf } from 'telegraf';
+import { IBotContext } from '../context/context.interface';
+import { ConnectionRepositoryImpl } from '../modules/account/infrastructure/connection.repository';
+import { ICronService } from './cron.interface';
+import { Connection } from '../modules/account/domain/entities/connection.entity';
+
+const check = async (bot: Telegraf<IBotContext>, connection: Connection) => {
+  const pool = new Pool({
+    user: connection.User,
+    host: connection.Host,
+    database: connection.Database,
+    password: connection.Password,
+    port: connection.Port,
+  });
+
+  const client = await pool.connect();
+  const res =
+    await client.query(`SELECT pid, now() - pg_stat_activity.query_start AS duration, query, query_id state FROM pg_stat_activity 
+    WHERE query_start IS NOT NULL
+    AND (now() - pg_stat_activity.query_start) > interval '30 second'
+    AND query NOT LIKE '%FROM pg_stat_activity%'`);
+
+  console.log('death request:::::::::', res.rows);
+
+  if (res.rows) {
+    for (const row of res.rows) {
+      try {
+        bot.telegram.sendMessage(
+          Number(connection.Account?.Id),
+          `The transaction exceded the time limit query: ${
+            row.query
+          }\n${Object.entries(row.duration).reduce(
+            (acc, [key, value]) => `${acc}\n${value} ${key}`,
+            'Execution time:'
+          )}`
+        );
+
+        client.release();
+      } catch (e) {
+        client.release();
+        console.log(e);
+      }
+    }
+  }
+};
 
 export class CronService implements ICronService {
   constructor(
     // private readonly databaseService: IDatabase,
-    private readonly bot: Telegraf<IBotContext>,
-  ) { }
-  
-  
+    private readonly bot: Telegraf<IBotContext>
+  ) {}
+
   async init() {
-    cron.schedule('*/30 * * * * *', async () => {
+    cron.schedule('*/10 * * * * *', async () => {
       const connectionRepo = new ConnectionRepositoryImpl();
-        const connestions = await connectionRepo.find();
-        
-        try {
-          const pool = new Pool({
-            user: connestions[0].User,
-            host: connestions[0].Host,
-            database: connestions[0].Database,
-            password: connestions[0].Password,
-            port: connestions[0].Port,
-          })
-          const client = await pool.connect();
-          const res = await client.query(`SELECT  pid, now() - pg_stat_activity.query_start AS duration, query, state FROM (SELECT * FROM pg_stat_activity WHERE query_start IS NOT NULL) pg_stat_activity 
-          WHERE (now() - pg_stat_activity.query_start) > interval '8 minute'`)
-          console.log("death request:::::::::", res.rows)
-          if (res.rows){
-            for (const row of res.rows) {
-              try {
-                //await client.query(`SELECT pg_cancel_backend(${row.pid})`)
-                await client.query(`SELECT pg_terminate_backend(${row.pid})`)
-                this.bot.telegram.sendMessage(Number(connestions[0].Account?.Id), `The transaction exceeded the time limit: query: ${res.rows[0].query}`)
-                client.release();
-              } catch (e) {
-                client.release();
-               console.log(e)  
-              }
-            }
-          }
-       
+      const connections = await connectionRepo.find(true);
+
+      try {
+        for await (let connection of connections) {
+          await check(this.bot, connection);
         }
-        catch(e) {
-          console.log(e)
-        }
-        
+      } catch (e) {
+        console.log(e);
+      }
     });
   }
 }
+

@@ -7,7 +7,8 @@ import { Connection } from '../modules/account/domain/entities/connection.entity
 import { AccountRepositoryImpl } from '../modules/account/infrastructure/account.repository'
 import { CommandBase } from './base/command.base'
 import { CommandConstants } from './constants/commands.constants'
-import { ctxType } from './dashboard.command'
+import { ctxType } from './index'
+
 
 const accountRepo = new AccountRepositoryImpl();
 
