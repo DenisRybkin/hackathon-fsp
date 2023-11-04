@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool } from 'pg'
 
 export interface ICredentialsDB {
   readonly user: string;
@@ -41,7 +41,6 @@ export class DbClientService {
   public async getStatsActivity() {
     const res = await this.execute('SELECT * FROM pg_stat_activity;');
     const transformedRes = res.rows
-      .filter(item => item.datname == 'r-journal1')
       .map(item => ({
         datid: item.datid,
         datname: item.datname,

@@ -75,8 +75,9 @@ export class DashboardCommand extends CommandBase {
     const res = await client.execute(
       `SELECT * FROM pg_stat_activity where datname='${this.connection.Database}'`
     );
-    console.log(transformStats(res.rows)[0],22222, typeof transformStats(res.rows))
-    this.ctx.replyWithHTML((transformStats(res.rows).join('-----\n')));
+    for (const item of (transformStats(res.rows) as string[]) ) {
+      await this.ctx.replyWithHTML(item)
+    }
   }
 
   handle(): void {
@@ -99,15 +100,11 @@ export class DashboardCommand extends CommandBase {
           callback_data: CommandConstants.GetStatsIndividual,
         },
       ],
+      [{
+        text: 'Show Dashboard',
+        callback_data: CommandConstants.GetDashboard,
+      },]
     ];
-
-    if (this.connection.Dashboard)
-      keyboard.push([
-        {
-          text: 'Show Dashboard',
-          callback_data: CommandConstants.GetDashboard,
-        },
-      ]);
 
     this.ctx.reply(
       `Connection\n${this.connection.User}:${this.connection.Database}`,
