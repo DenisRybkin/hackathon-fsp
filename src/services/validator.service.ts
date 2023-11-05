@@ -17,7 +17,7 @@ export class ValidatorService {
     };
     static cachingNormalValidator(value: number) {
         if(value > 90) {
-            return '️🌈 The percentage of hits in the cache is normal';
+            return '️✅ Buffer hit ratio is normal';
         } else {
             return '❗ Increase the shared_buffers parameter, or increase the RAM';
         }
@@ -26,13 +26,13 @@ export class ValidatorService {
         if(value > 0) {
             return '❗️ Pay attention to the settings of the background writer, evaluate the performance of the disk system';
         } else {
-            return '🌈 The buffers_backend_fsync indicator is normal';
+            return '✅ The buffers_backend_fsync indicator is normal';
         }
     }
     static unusedIndexesValidator(rows: any = []) {
         const indexNames = rows.filter(r => !r.indexrelname.includes('pg_'));
         if(!indexNames.length) {
-            return '🌈 There are no unused indexes';
+            return '✅ There are no unused indexes';
         } else {
             return '❗️ Unused indexes names: ' + indexNames.join(', ');
         }

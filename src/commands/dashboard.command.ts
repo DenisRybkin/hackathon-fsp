@@ -47,7 +47,7 @@ export class DashboardCommand extends CommandBase {
     );
 
     this.ctx.reply(
-      `Used disk size is: ${size.rows?.[0].pg_size_pretty} / ${maxsize}`
+      `💿 Used disk size is: ${size.rows?.[0].pg_size_pretty} / ${maxsize}`
     );
   }
 
@@ -76,7 +76,7 @@ export class DashboardCommand extends CommandBase {
     });
 
     const res = await client.getConnections();
-    this.ctx.reply(`Connections to the db: ${res.now} / ${res.max}`);
+    this.ctx.reply(`🌐 Connections to the db: ${res.now} / ${res.max}`);
   }
 
   private async setSharedBuffers() {
@@ -205,10 +205,10 @@ export class DashboardCommand extends CommandBase {
       ],
       [
         {
-          text: 'Max connections',
+          text: 'Connection stats',
           callback_data: CommandConstants.GetMaxConnections,
         },
-        { text: 'Buffers stats', callback_data: CommandConstants.BuffersStats },
+        { text: 'Buffer stats', callback_data: CommandConstants.BuffersStats },
         { text: 'Metrics', callback_data: CommandConstants.Metrics },
       ]
     ];
