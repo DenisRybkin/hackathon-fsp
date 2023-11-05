@@ -4,26 +4,10 @@ import { IBotContext } from '../context/context.interface'
 import { DbClientService } from '../database/db-client.service'
 import { Connection } from '../modules/account/domain/entities/connection.entity'
 import { screenshoter } from '../services/screenshot.service'
+import { ValidatorService } from "../services/validator.service"
 import { CommandBase } from './base/command.base'
 import { CommandConstants } from './constants/commands.constants'
 import { ctxType } from './index'
-
-const transformStats = (res: any) => {
-  const transformedRes = res.map(item => ({
-    datid: 'db id: ' + item.datid,
-    datname: 'username db name: ' + item.datname,
-    pid: 'process id:' + item.pid,
-    usename: 'username: ' + item.usename,
-    application_name: 'app name: ' + item.application_name,
-    query_start: 'start request date: ' + new Date(item.query_start)?.toLocaleString('en'),
-    state_change: 'date last change: ' + new Date(item.state_change).toLocaleString('en'),
-    state: 'process state: ' + item.state,
-  }));
-
-  return transformedRes.map(item =>
-    Object.values(item).reduce((acc, cur) => `${acc}\n${cur}`, '')
-  );
-};
 
 export class DashboardCommand extends CommandBase {
   constructor(
@@ -63,8 +47,23 @@ export class DashboardCommand extends CommandBase {
     );
 
     this.ctx.reply(
-      `Used disk size is: ${size.rows?.[0].pg_size_pretty} / ${maxsize}`
+      `💿 Used disk size is: ${size.rows?.[0].pg_size_pretty} / ${maxsize}`
     );
+  }
+
+  private async getMetrics() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+
+    // const res = await client.getConnections();
+    this.getCachingNormalStatus();
+    this.getBuffersBackendStatus();
+    this.getUnusedIndexesStatus();
   }
 
   private async getConnections() {
@@ -77,7 +76,7 @@ export class DashboardCommand extends CommandBase {
     });
 
     const res = await client.getConnections();
-    this.ctx.reply(`Connections to the db: ${res.now} / ${res.max}`);
+    this.ctx.reply(`🌐 Connections to the db: ${res.now} / ${res.max}`);
   }
 
   // private async setSharedBuffers() {
@@ -138,9 +137,48 @@ export class DashboardCommand extends CommandBase {
       AND query NOT LIKE '%FROM pg_stat_activity%'`,
       [this.connection.Database]
     );
-    for (const item of transformStats(res.rows)) {
+    for (const item of ValidatorService.transformStats(res.rows)) {
       this.ctx.reply(item);
     }
+  }
+
+  private async getCachingNormalStatus() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+
+    const param = await client.getCachingNormal();
+    this.ctx.reply(ValidatorService.cachingNormalValidator(param));
+  }
+
+  private async getBuffersBackendStatus() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+
+    const param = await client.getBuffersBackendFsync();
+    this.ctx.reply(ValidatorService.buffersBackendValidator(param));
+  }
+
+  private async getUnusedIndexesStatus() {
+    const client = new DbClientService({
+      database: this.connection.Database,
+      host: this.connection.Host,
+      password: this.connection.Password,
+      port: this.connection.Port,
+      user: this.connection.User,
+    });
+
+    const rows = await client.getUnusedIndexes();
+    this.ctx.reply(ValidatorService.unusedIndexesValidator(rows));
   }
 
 
@@ -162,9 +200,9 @@ export class DashboardCommand extends CommandBase {
       this.getBuffersStats.bind(this)
     );
     this.bot.action(
-      CommandConstants.CheckBufferHitRatio,
-      this.checkBufferHitRatio.bind(this)
-    )
+        CommandConstants.Metrics,
+        this.getMetrics.bind(this)
+    );
 
     const keyboard: InlineKeyboardButton[][] = [
       [
@@ -185,13 +223,11 @@ export class DashboardCommand extends CommandBase {
       ],
       [
         {
-          text: 'Max connections',
+          text: 'Connection stats',
           callback_data: CommandConstants.GetMaxConnections,
         },
-        { text: 'Buffers stats', callback_data: CommandConstants.BuffersStats },
-      ],
-      [
-        { text: 'Buffer hit ratio', callback_data: CommandConstants.CheckBufferHitRatio}
+        { text: 'Buffer stats', callback_data: CommandConstants.BuffersStats },
+        { text: 'Metrics', callback_data: CommandConstants.Metrics },
       ]
     ];
 
