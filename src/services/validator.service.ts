@@ -30,7 +30,7 @@ export class ValidatorService {
         }
     }
     static unusedIndexesValidator(rows: any = []) {
-        const indexNames = rows.filter(r => !r.indexrelname.includes('pg_'));
+        const indexNames = rows.filter(r => !r.indexrelname.includes('pg_')).map(r => r.indexrelname);
         if(!indexNames.length) {
             return '✅ There are no unused indexes';
         } else {
