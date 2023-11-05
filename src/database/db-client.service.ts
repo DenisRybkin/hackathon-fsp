@@ -143,7 +143,7 @@ export class DbClientService {
     return this.execute(
       `SELECT pid, now() - pg_stat_activity.query_start AS duration, query, query_id state FROM pg_stat_activity 
     WHERE query_start IS NOT NULL
-    AND (now() - pg_stat_activity.query_start) > interval '10 second'
+    AND (now() - pg_stat_activity.query_start) > interval '4 hour'
     AND query NOT LIKE '%FROM pg_stat_activity%'`
     ).then(res => res.rows);
   }

@@ -54,6 +54,8 @@ export const TerminateHandler = (
       password: connection.Password,
       port: connection.Port,  
     }).execute('select pg_terminate_backend($1)', [Number(ctx.match[1])]);
+    ctx.deleteMessage(ctx.update.callback_query.message?.message_id)
+    //console.log(111,ctx.update.callback_query.message?.message_id,'!1111!', ctx.update.callback_query.from)
   });
 };
 

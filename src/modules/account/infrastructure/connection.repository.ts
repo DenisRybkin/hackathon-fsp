@@ -64,7 +64,7 @@ export class ConnectionRepositoryImpl implements IConnectionRepository {
           deleteMany: {},
           connectOrCreate: connection.Memories?.map(({ Id, Usage }) => ({
             where: { id: Id },
-            create: { usage: Usage },
+            create: { id: Id, usage: Usage },
           })),
         },
       },

@@ -34,6 +34,8 @@ const checkDeadlocks = async (
 ) => {
 const deadlocks = await GetDeadlocks(connection);
 
+if (!deadlocks) return
+
 console.log('deadlocks:', deadlocks);
 
 for (const deadlock of deadlocks) {
@@ -45,25 +47,14 @@ const checkMemoryDatabase = async (
   connection: Connection,
   connectionRepo: ConnectionRepositoryImpl
 ) => {
-  const memory = await GetMemoryDatabase(connection); 
-  const currentLastStateMemory = connection?.Memories?.[(connection.Memories?.length ?? 0) - 1 ]
-  
-  if (!currentLastStateMemory?.Usage) {
-    connection.addMemory(new Memory(memory[0].pg_database_size))
-  }
-  if(currentLastStateMemory?.Usage) {
-    if (+currentLastStateMemory.Usage !== +memory[0].pg_database_size) {
-    
-      connection.addMemory(new Memory(memory[0].pg_database_size))
-    } 
-  }
+  const memory = await GetMemoryDatabase(connection);
+  connection.addMemory(new Memory(memory[0].pg_database_size))
   
   try{
     await connectionRepo.save(connection)
   } catch (e) {
     console.log(e)
   }
-  //console.log("Model::::::::", connection.Memories)
   console.log("size::::::::", memory[0].pg_database_size)
 }
 
@@ -72,21 +63,18 @@ const checkFullMemoryDatebaseConnection = async (
   connection: Connection
 ) => {
     const memory = await GetMemoryDatabase(connection);
-    const currentLastStateMemory = connection?.Memories?.[0]
-    const firstStateMemory = connection?.Memories?.[(connection.Memories?.length ?? 0) - 1 ]
-    console.log("firstStateMemory", firstStateMemory, '---', currentLastStateMemory, "currentLastStateMemory")
+    const currentLastStateMemory = connection?.Memories?.[1]
+    const firstStateMemory = connection?.Memories?.[(connection.Memories?.length) - 1]
+    //console.log("firstStateMemory", firstStateMemory, '---', currentLastStateMemory, "currentLastStateMemory")
     if (firstStateMemory && currentLastStateMemory) {
-
-      const difference = ((+currentLastStateMemory.Usage / +firstStateMemory.Usage) * 100) - 100
-      console.log("firstStateMemory", firstStateMemory, "currentLastStateMemory", currentLastStateMemory)
-      console.log("difference", difference)
-      if (difference > 80) {
-      
-      if (difference > 10) {
+      const difference = ((+firstStateMemory.Usage * 100) / +currentLastStateMemory.Usage) - 100
+      // console.log("firstStateMemory", firstStateMemory, "currentLastStateMemory", currentLastStateMemory)
+      // console.log("difference", difference)
+      console.log(difference, currentLastStateMemory.Usage, firstStateMemory.Usage)
+      if (difference > 20) {
         await SendFullDatebaseMessage(bot, connection)
-    }
-    }
-  } 
+      }
+    } 
 }
 
 export class CronService implements ICronService {
@@ -96,11 +84,11 @@ export class CronService implements ICronService {
     await this.asyncAnalyzeLongTransaction();
     await this.asyncAnalyzeDeadlocks();
     await this.analizeUseMemory();
-    await this.checkFullMemoryDatebase();
+    await this.checkFullMemoryDatabase();
   }
 
   async asyncAnalyzeLongTransaction() {
-    cron.schedule('*/60 * * * * *', async () => {
+    cron.schedule('*/30 * * * * *', async () => {
       const connectionRepo = new ConnectionRepositoryImpl();
       const connections = await connectionRepo.find(true);
 
@@ -116,7 +104,7 @@ export class CronService implements ICronService {
     });
   }
   async analizeUseMemory() {
-    cron.schedule('* */30 * * * *', async () => {
+    cron.schedule('*/1 * * * *', async () => {
       const connectionRepo = new ConnectionRepositoryImpl();
       const connections = await connectionRepo.find(true);
       if(!connections) return null;
@@ -130,7 +118,7 @@ export class CronService implements ICronService {
     });
   }
   async asyncAnalyzeDeadlocks() {
-    cron.schedule('*/60 * * * * *', async () => {
+    cron.schedule('*/8 * * * * *', async () => {
       const connectionRepo = new ConnectionRepositoryImpl();
       const connections = await connectionRepo.find(true);
       
@@ -145,8 +133,8 @@ export class CronService implements ICronService {
       }
     })
   }
-  async checkFullMemoryDatebase() {
-    cron.schedule('*/5 * * * * *', async() => {
+  async checkFullMemoryDatabase() {
+    cron.schedule('*/50 * * * * *', async() => {
       const connectionRepo = new ConnectionRepositoryImpl();
       const connections = await connectionRepo.find(true);
       if(!connections) return null;
@@ -157,7 +145,6 @@ export class CronService implements ICronService {
       } catch (e) {
         console.log('error:', e);
       }
-
     })
   }
 }
