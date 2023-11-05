@@ -2,16 +2,16 @@ import cron from 'node-cron'
 import { Telegraf } from 'telegraf'
 import { IBotContext } from '../context/context.interface'
 import { Connection } from '../modules/account/domain/entities/connection.entity'
+import { Memory } from '../modules/account/domain/entities/memory.entity'
 import { ConnectionRepositoryImpl } from '../modules/account/infrastructure/connection.repository'
 import { ICronService } from './cron.interface'
 import { GetDeadlocks, SendDeadlockMessage } from './utils/deadlock.utils'
+import { GetMemoryDatabase } from './utils/get-memory.utils'
 import {
   GetTransactions,
   SendLongTransactionMessage,
   TerminateHandler,
 } from './utils/long-transactions.utils'
-import { GetMemoryDatabase } from './utils/get-memory.utils'
-import { Memory } from '../modules/account/domain/entities/memory.entity'
 
 const checkLongTransaction = async (
   bot: Telegraf<IBotContext>,
@@ -45,7 +45,6 @@ const checkMemoryDatabase = async (
   connection: Connection,
   connectionRepo: ConnectionRepositoryImpl
 ) => {
-  console.log("test")
   const memory = await GetMemoryDatabase(connection); 
   const currentLastStateMemory = connection?.Memories?.[(connection.Memories?.length ?? 0) - 1 ]
   if (!currentLastStateMemory) {
@@ -72,7 +71,7 @@ export class CronService implements ICronService {
   }
 
   async asyncAnalyzeLongTransaction() {
-    cron.schedule('*/13 * * * * *', async () => {
+    cron.schedule('*/60 * * * * *', async () => {
       const connectionRepo = new ConnectionRepositoryImpl();
       const connections = await connectionRepo.find(true);
 
@@ -88,7 +87,7 @@ export class CronService implements ICronService {
     });
   }
   async analizeUseMemory() {
-    cron.schedule('*/5 * * * * *', async () => {
+    cron.schedule('* */30 * * * *', async () => {
       const connectionRepo = new ConnectionRepositoryImpl();
       const connections = await connectionRepo.find(true);
       if(!connections) return null;
@@ -102,7 +101,7 @@ export class CronService implements ICronService {
     });
   }
   async asyncAnalyzeDeadlocks() {
-    cron.schedule('*/20 * * * * *', async () => {
+    cron.schedule('*/60 * * * * *', async () => {
       const connectionRepo = new ConnectionRepositoryImpl();
       const connections = await connectionRepo.find(true);
       
