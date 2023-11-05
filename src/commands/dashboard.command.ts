@@ -152,7 +152,7 @@ export class DashboardCommand extends CommandBase {
     });
 
     const param = await client.getCachingNormal();
-    this.ctx.reply(ValidatorService.cachingNormalValidator(param));
+    await this.ctx.reply(ValidatorService.cachingNormalValidator(param));
   }
 
   private async getBuffersBackendStatus() {
@@ -165,7 +165,7 @@ export class DashboardCommand extends CommandBase {
     });
 
     const param = await client.getBuffersBackendFsync();
-    this.ctx.reply(ValidatorService.buffersBackendValidator(param));
+    await this.ctx.reply(ValidatorService.buffersBackendValidator(param));
   }
 
   private async getUnusedIndexesStatus() {

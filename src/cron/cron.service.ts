@@ -6,12 +6,12 @@ import { Memory } from '../modules/account/domain/entities/memory.entity'
 import { ConnectionRepositoryImpl } from '../modules/account/infrastructure/connection.repository'
 import { ICronService } from './cron.interface'
 import { GetDeadlocks, SendDeadlockMessage } from './utils/deadlock.utils'
-import { GetMemoryDatabase, SendFullDatebaseMessage } from './utils/memory.utils'
 import {
   GetTransactions,
   SendLongTransactionMessage,
   TerminateHandler,
 } from './utils/long-transactions.utils'
+import { GetMemoryDatabase, SendFullDatebaseMessage } from './utils/memory.utils'
 
 const checkLongTransaction = async (
   bot: Telegraf<IBotContext>,
@@ -73,7 +73,7 @@ const checkFullMemoryDatebaseConnection = async (
 ) => {
     const memory = await GetMemoryDatabase(connection);
     const currentLastStateMemory = connection?.Memories?.[0]
-    let firstStateMemory = connection?.Memories?.[(connection.Memories?.length ?? 0) - 1 ]
+    const firstStateMemory = connection?.Memories?.[(connection.Memories?.length ?? 0) - 1 ]
     console.log("firstStateMemory", firstStateMemory, '---', currentLastStateMemory, "currentLastStateMemory")
     if (firstStateMemory && currentLastStateMemory) {
 
